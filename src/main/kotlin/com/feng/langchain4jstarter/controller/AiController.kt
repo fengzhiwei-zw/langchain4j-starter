@@ -1,0 +1,56 @@
+package com.feng.langchain4jstarter.controller
+
+import com.feng.langchain4jstarter.service.Assistant
+import com.feng.langchain4jstarter.service.AssistantStream
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.MediaType
+import org.springframework.web.bind.annotation.*
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+
+
+@RestController
+@RequestMapping("/ai")
+class AiController {
+    private val executorService: ExecutorService = Executors.newFixedThreadPool(3)
+
+    @Autowired
+    private lateinit var assistant: Assistant
+
+    @Autowired
+    private lateinit var assistantStream: AssistantStream
+
+    @PostMapping("/chat")
+    fun chat(
+        @RequestParam(defaultValue = "default-session") sessionId: String,
+        @RequestBody message: String
+    ): String {
+        return assistant.chat(sessionId, message)
+    }
+
+    @PostMapping(value = ["/chatStream"], produces = [MediaType.TEXT_EVENT_STREAM_VALUE]) // 必须指定 produces
+    fun chatStream(
+        @RequestParam(defaultValue = "default-session") sessionId: String,
+        @RequestBody message: String
+    ): SseEmitter {
+        val emitter = SseEmitter()
+        executorService.execute(Runnable {
+            assistantStream.chat(sessionId, message)
+                .onPartialResponse { token ->
+                    try {
+                        // SseEmitter 会自动处理 data: 前缀和编码
+                        emitter.send(SseEmitter.event().data(token))
+                    } catch (e: Exception) {
+                        emitter.completeWithError(e)
+                    }
+                }
+                .onCompleteResponse { _ -> emitter.complete() }
+                .onError({ err ->
+                    emitter.completeWithError(err)
+                })
+                .start()
+        })
+        return emitter
+    }
+}
