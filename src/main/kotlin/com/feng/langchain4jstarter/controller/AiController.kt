@@ -1,10 +1,12 @@
 package com.feng.langchain4jstarter.controller
 
+import com.feng.langchain4jstarter.service.AiService
 import com.feng.langchain4jstarter.service.Assistant
 import com.feng.langchain4jstarter.service.AssistantStream
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -21,6 +23,9 @@ class AiController {
     @Autowired
     private lateinit var assistantStream: AssistantStream
 
+    @Autowired
+    private lateinit var aiService: AiService
+
     @PostMapping("/chat")
     fun chat(
         @RequestParam(defaultValue = "default-session") sessionId: String,
@@ -35,7 +40,7 @@ class AiController {
         @RequestBody message: String
     ): SseEmitter {
         val emitter = SseEmitter()
-        executorService.execute(Runnable {
+        executorService.execute {
             assistantStream.chat(sessionId, message)
                 .onPartialResponse { token ->
                     try {
@@ -50,7 +55,16 @@ class AiController {
                     emitter.completeWithError(err)
                 })
                 .start()
-        })
+        }
         return emitter
+    }
+
+    @PostMapping("/chromaEmbedding")
+    fun addChromaEmbedding(
+        @RequestParam(defaultValue = "default-session") sessionId: String,
+        @RequestParam("file") file: MultipartFile
+        ): String {
+        aiService.processUserUpload(sessionId, file)
+        return "知识库添加成功！！！"
     }
 }

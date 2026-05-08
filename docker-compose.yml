@@ -1,0 +1,4 @@
+services:
+  chroma:
+    image: chromadb/chroma:latest
+    container_name: ai-chroma-service

@@ -51,6 +51,33 @@
             <version>${langchain4j.version}</version>
         </dependency>
 
+        <!-- Embedding 模型（推荐 bge-small 或 all-MiniLM） -->
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-embeddings-all-minilm-l6-v2</artifactId>
+            <version>${langchain4j.version}</version>
+        </dependency>
+
+        <!-- Chroma 向量存储（推荐） -->
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-chroma</artifactId>
+            <version>${langchain4j.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>dev.langchain4j</groupId>
+                    <artifactId>langchain4j-http-client-jdk</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- 文档加载器（支持多种格式） -->
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-document-parser-apache-tika</artifactId>
+            <version>${langchain4j.version}</version>
+        </dependency>
+
         <!-- 如果想用本地模型（如 Ollama），额外添加 -->
         <!-- <dependency>
             <groupId>dev.langchain4j</groupId>

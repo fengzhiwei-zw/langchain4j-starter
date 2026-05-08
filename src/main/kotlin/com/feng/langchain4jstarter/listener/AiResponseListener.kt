@@ -13,7 +13,6 @@ class AiResponseListener: AiServiceResponseReceivedListener {
         /**
          * 用户ID、方法名称、提问、提问时间、回答、finishReason、大模型名称
          */
-
         println("【监控】Token 消耗: ${response.tokenUsage().totalTokenCount()}")
         invocationContext.chatMemoryId()
         invocationContext.methodName()
