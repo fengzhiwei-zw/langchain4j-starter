@@ -37,7 +37,7 @@ class AiController {
     @PostMapping(value = ["/chatStream"], produces = [MediaType.TEXT_EVENT_STREAM_VALUE]) // 必须指定 produces
     fun chatStream(
         @RequestParam(defaultValue = "default-session") sessionId: String,
-        @RequestBody message: String
+        @RequestParam message: String,
     ): SseEmitter {
         val emitter = SseEmitter()
         executorService.execute {
@@ -66,5 +66,12 @@ class AiController {
         ): String {
         aiService.processUserUpload(sessionId, file)
         return "知识库添加成功！！！"
+    }
+
+    @PostMapping("/document")
+    fun searchDocument(
+        @RequestParam(defaultValue = "default-session") sessionId: String
+        ): String {
+        return aiService.queryDocument(sessionId, "@RequestParam('file') file: MultipartFile")
     }
 }

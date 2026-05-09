@@ -4,8 +4,10 @@ import com.feng.langchain4jstarter.listener.AiCompletedListener
 import com.feng.langchain4jstarter.listener.AiRequestListener
 import com.feng.langchain4jstarter.listener.AiResponseListener
 import com.feng.langchain4jstarter.listener.AiToolExecutedListener
+import com.feng.langchain4jstarter.service.AiService
 import com.feng.langchain4jstarter.service.Assistant
 import com.feng.langchain4jstarter.service.AssistantStream
+import com.feng.langchain4jstarter.tool.DocumentTool
 import com.feng.langchain4jstarter.tool.WeatherTool
 import dev.langchain4j.data.document.loader.FileSystemDocumentLoader
 import dev.langchain4j.data.document.parser.apache.tika.ApacheTikaDocumentParser
@@ -59,6 +61,13 @@ class AiConfig {
             .baseUrl("http://localhost:8000")   // Chroma 服务地址
             .collectionName("ai-chroma-service")
             .build();
+    }
+
+    @Bean
+    fun searchDocumentTool(
+        aiService: AiService
+    ): DocumentTool {
+        return DocumentTool(aiService)
     }
 
     @Bean
@@ -120,14 +129,15 @@ class AiConfig {
     fun assistant(
         chatModel: ChatModel,
         chatMemoryProvider: ChatMemoryProvider,
-        contentRetriever : ContentRetriever
+        contentRetriever : ContentRetriever,
+        documentTool: DocumentTool
     ): Assistant {   // 注入 Provider
 
         return AiServices.builder(Assistant::class.java)
             .chatModel(chatModel)
             .chatMemoryProvider(chatMemoryProvider) // 使用 Provider（推荐）
             .contentRetriever(contentRetriever)
-            .tools(WeatherTool())
+            .tools(WeatherTool(), documentTool)
             .registerListeners(AiRequestListener(), AiToolExecutedListener(), AiResponseListener(), AiCompletedListener())
             .build()
     }
@@ -137,13 +147,14 @@ class AiConfig {
         chatModel: StreamingChatModel,
         chatMemoryProvider: ChatMemoryProvider,
         contentRetriever : ContentRetriever,
+        documentTool: DocumentTool
     ): AssistantStream {   // 注入 Provider
 
         return AiServices.builder(AssistantStream::class.java)
             .streamingChatModel(chatModel)
             .chatMemoryProvider(chatMemoryProvider) // 使用 Provider（推荐）
             .contentRetriever(contentRetriever)
-            .tools(WeatherTool())
+            .tools(WeatherTool(), documentTool)
             .registerListeners(AiRequestListener(), AiToolExecutedListener(), AiResponseListener(), AiCompletedListener())
             .build()
     }

@@ -36,6 +36,6 @@ langchain4j:
 logging:
   level:
     # 如果你使用的是 SpringRestClient，开启这个可以看到具体的 HTTP 请求路径
-    org.springframework.web: DEBUG
+    org.springframework.web: INFO
     dev:
-      langchain4j: DEBUG
+      langchain4j: INFO

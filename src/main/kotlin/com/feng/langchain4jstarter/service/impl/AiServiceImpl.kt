@@ -3,15 +3,12 @@ package com.feng.langchain4jstarter.service.impl
 import com.feng.langchain4jstarter.service.AiService
 import dev.langchain4j.data.document.Document
 import dev.langchain4j.data.document.DocumentParser
-import dev.langchain4j.data.document.parser.TextDocumentParser
+import dev.langchain4j.data.document.parser.apache.tika.ApacheTikaDocumentParser
 import dev.langchain4j.data.document.splitter.DocumentSplitters
 import dev.langchain4j.data.embedding.Embedding
 import dev.langchain4j.data.segment.TextSegment
 import dev.langchain4j.model.embedding.EmbeddingModel
-import dev.langchain4j.store.embedding.EmbeddingMatch
-import dev.langchain4j.store.embedding.EmbeddingSearchRequest
 import dev.langchain4j.store.embedding.chroma.ChromaEmbeddingStore
-import dev.langchain4j.store.embedding.filter.MetadataFilterBuilder.metadataKey
 import org.apache.commons.codec.digest.DigestUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Async
@@ -28,14 +25,9 @@ class AiServiceImpl : AiService{
     @Autowired
     private lateinit var embeddingStore: ChromaEmbeddingStore
 
-    @Async
     override fun processUserUpload(userId: String, file: MultipartFile) {
-        // 1. 生成文件唯一哈希 (用于防重)
-        val fileBytes: ByteArray = file.bytes
-        val fileHash: String = DigestUtils.md5Hex(fileBytes)
-
         // 2. 解析文档
-        val parser: DocumentParser = TextDocumentParser()
+        val parser: DocumentParser = ApacheTikaDocumentParser()
         val document: Document = parser.parse(file.inputStream)
 
         // 3. 切片 (保持语义连贯)
@@ -44,6 +36,10 @@ class AiServiceImpl : AiService{
 
         val ids: MutableList<String> = ArrayList()
         val embeddings: MutableList<Embedding> = ArrayList()
+
+        //1. 生成文件唯一哈希 (用于防重)
+        val fileBytes: ByteArray = file.bytes
+        val fileHash: String = DigestUtils.md5Hex(fileBytes)
 
         for (i in segments.indices) {
             val segment: TextSegment = segments[i]
@@ -62,21 +58,5 @@ class AiServiceImpl : AiService{
         // 6. 批量写入，提高效率
         embeddingStore.addAll(ids, embeddings, segments)
         println("用户 $userId 的文件处理完成，ID: $fileHash")
-    }
-
-    override fun search(userId: String, queryText: String): List<TextSegment> {
-        val queryEmbedding = embeddingModel.embed(queryText).content()
-
-        // 生产环境必须：只查询当前用户的数据
-        val searchRequest = EmbeddingSearchRequest.builder()
-            .queryEmbedding(queryEmbedding)
-            .filter(metadataKey("userId").isEqualTo(userId))
-            .maxResults(5)
-            .build()
-
-        val result = embeddingStore.search(searchRequest)
-        return result.matches().stream()
-            .map { match: EmbeddingMatch<TextSegment> -> match.embedded() }
-            .toList()
     }
 }

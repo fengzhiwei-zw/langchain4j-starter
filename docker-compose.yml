@@ -2,3 +2,5 @@ services:
   chroma:
     image: chromadb/chroma:latest
     container_name: ai-chroma-service
+    ports:
+      - "8000:8000"  # 格式为 "宿主机端口:容器内端口"

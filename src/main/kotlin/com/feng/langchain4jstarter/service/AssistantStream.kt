@@ -4,6 +4,7 @@ import dev.langchain4j.service.MemoryId
 import dev.langchain4j.service.SystemMessage
 import dev.langchain4j.service.TokenStream
 import dev.langchain4j.service.UserMessage
+import org.springframework.web.multipart.MultipartFile
 
 interface AssistantStream {
 
