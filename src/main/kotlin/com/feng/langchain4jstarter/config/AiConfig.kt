@@ -18,14 +18,12 @@ import dev.langchain4j.memory.chat.MessageWindowChatMemory
 import dev.langchain4j.model.chat.ChatModel
 import dev.langchain4j.model.chat.StreamingChatModel
 import dev.langchain4j.model.embedding.EmbeddingModel
-import dev.langchain4j.model.embedding.onnx.allminilml6v2.AllMiniLmL6V2EmbeddingModel
 import dev.langchain4j.rag.content.retriever.ContentRetriever
 import dev.langchain4j.rag.content.retriever.EmbeddingStoreContentRetriever
 import dev.langchain4j.service.AiServices
 import dev.langchain4j.store.embedding.EmbeddingStore
 import dev.langchain4j.store.embedding.chroma.ChromaApiVersion
 import dev.langchain4j.store.embedding.chroma.ChromaEmbeddingStore
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
@@ -33,22 +31,11 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class AiConfig {
 
-    @Value($$"${ai.dash-scope.api-key}")
-    private lateinit var apiKey: String
-
-    @Value($$"${ai.dash-scope.base-url}")
-    private lateinit var baseUrl: String
-
-    @Value($$"${ai.dash-scope.stream-model-name}")
-    private lateinit var streamModelName: String
-
-    @Value($$"${ai.dash-scope.model-name}")
-    private lateinit var modelName: String
-
-    @Bean
-    fun embeddingModel(): EmbeddingModel {
-        return AllMiniLmL6V2EmbeddingModel()
-    }
+    // 方案一：本地小模型；还可以使用OpenAiEmbedding（yaml中自动配置）
+    // @Bean
+    // fun embeddingModel(): EmbeddingModel {
+    //     return AllMiniLmL6V2EmbeddingModel()
+    // }
 
     @Bean
     fun embeddingStore(): EmbeddingStore<TextSegment> {

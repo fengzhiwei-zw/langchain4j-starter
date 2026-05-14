@@ -1,5 +1,14 @@
 package com.feng.langchain4jstarter.controller
 
+import com.alibaba.dashscope.aigc.imagegeneration.ImageGeneration
+import com.alibaba.dashscope.aigc.imagegeneration.ImageGenerationMessage
+import com.alibaba.dashscope.aigc.imagegeneration.ImageGenerationParam
+import com.alibaba.dashscope.aigc.imagegeneration.ImageGenerationResult
+import com.alibaba.dashscope.exception.ApiException
+import com.alibaba.dashscope.exception.NoApiKeyException
+import com.alibaba.dashscope.exception.UploadFileException
+import com.alibaba.dashscope.utils.JsonUtils
+import com.feng.langchain4jstarter.Main.waitTask
 import com.feng.langchain4jstarter.service.AiService
 import com.feng.langchain4jstarter.service.Assistant
 import com.feng.langchain4jstarter.service.AssistantStream
@@ -8,6 +17,7 @@ import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
+import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -16,6 +26,12 @@ import java.util.concurrent.Executors
 @RequestMapping("/ai")
 class AiController {
     private val executorService: ExecutorService = Executors.newFixedThreadPool(3)
+
+    @Autowired
+    private lateinit var imageGeneration: ImageGeneration
+
+    @Autowired
+    private lateinit var imageGenerationParam: ImageGenerationParam
 
     @Autowired
     private lateinit var assistant: Assistant
@@ -68,10 +84,36 @@ class AiController {
         return "知识库添加成功！！！"
     }
 
-    @PostMapping("/document")
-    fun searchDocument(
-        @RequestParam(defaultValue = "default-session") sessionId: String
-        ): String {
-        return aiService.queryDocument(sessionId, "@RequestParam('file') file: MultipartFile")
+    @PostMapping("/image")
+    fun image(@RequestParam message: String): String {
+        val generationMessage: ImageGenerationMessage = ImageGenerationMessage.builder()
+            .role("user")
+            .content(
+                mutableListOf<MutableMap<String, Any>>(
+                    Collections.singletonMap(
+                        "text",
+                        message
+                    )
+                )
+            ).build()
+        val taskResult: ImageGenerationResult?
+        try {
+            imageGenerationParam.messages = Collections.singletonList(generationMessage)
+            println("----async call, creating task----")
+            taskResult = imageGeneration.asyncCall(imageGenerationParam)
+        } catch (e: ApiException) {
+            throw RuntimeException(e.message)
+        } catch (e: NoApiKeyException) {
+            throw RuntimeException(e.message)
+        } catch (e: UploadFileException) {
+            throw RuntimeException(e.message)
+        }
+        println("Task created: " + JsonUtils.toJson(taskResult))
+        // 等待任务完成
+        val taskId = taskResult.output.taskId
+        val result = waitTask(taskId)
+        return JsonUtils.toJson(result).apply {
+            println(this)
+        }
     }
 }

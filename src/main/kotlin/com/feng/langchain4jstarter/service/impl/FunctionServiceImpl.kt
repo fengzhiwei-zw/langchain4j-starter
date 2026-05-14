@@ -8,6 +8,7 @@ import dev.langchain4j.store.embedding.EmbeddingSearchRequest
 import dev.langchain4j.store.embedding.EmbeddingStore
 import dev.langchain4j.store.embedding.filter.MetadataFilterBuilder.metadataKey
 import org.springframework.stereotype.Service
+import java.util.stream.Collectors.joining
 
 @Service
 class FunctionServiceImpl(
@@ -22,10 +23,10 @@ class FunctionServiceImpl(
             .filter(metadataKey("userId").isEqualTo(documentId))
             .maxResults(5)
             .build()
-        val result = embeddingStore.search(searchRequest)
+        val collect = embeddingStore.search(searchRequest)
             .matches().stream()
-            .map { match: EmbeddingMatch<TextSegment> -> match.embedded() }
-            .toList()
-        return "result"
+            .map { match: EmbeddingMatch<TextSegment> -> match.embedded().text() }
+            .collect(joining("\n\n"))
+        return collect.ifEmpty { "您没有查询此文档的权限，请联系管理员！" }
     }
 }
