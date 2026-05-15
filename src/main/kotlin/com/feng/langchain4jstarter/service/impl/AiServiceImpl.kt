@@ -1,62 +1,97 @@
 package com.feng.langchain4jstarter.service.impl
 
+import com.alibaba.dashscope.aigc.imagegeneration.ImageGeneration
+import com.alibaba.dashscope.aigc.imagegeneration.ImageGenerationMessage
+import com.alibaba.dashscope.aigc.imagegeneration.ImageGenerationParam
+import com.alibaba.dashscope.aigc.imagegeneration.ImageGenerationResult
+import com.alibaba.dashscope.exception.ApiException
+import com.alibaba.dashscope.exception.NoApiKeyException
+import com.alibaba.dashscope.exception.UploadFileException
+import com.alibaba.dashscope.utils.JsonUtils
+import com.feng.langchain4jstarter.Main.waitTask
 import com.feng.langchain4jstarter.service.AiService
-import dev.langchain4j.data.document.Document
-import dev.langchain4j.data.document.DocumentParser
-import dev.langchain4j.data.document.parser.apache.tika.ApacheTikaDocumentParser
-import dev.langchain4j.data.document.splitter.DocumentSplitters
-import dev.langchain4j.data.embedding.Embedding
-import dev.langchain4j.data.segment.TextSegment
-import dev.langchain4j.model.embedding.EmbeddingModel
-import dev.langchain4j.store.embedding.chroma.ChromaEmbeddingStore
-import org.apache.commons.codec.digest.DigestUtils
+import com.feng.langchain4jstarter.service.Assistant
+import com.feng.langchain4jstarter.service.AssistantStream
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
-import org.springframework.web.multipart.MultipartFile
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
+import java.util.*
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 
 @Service
 class AiServiceImpl : AiService{
 
     @Autowired
-    private lateinit var embeddingModel: EmbeddingModel
+    private lateinit var assistant: Assistant
 
     @Autowired
-    private lateinit var embeddingStore: ChromaEmbeddingStore
+    private lateinit var assistantStream: AssistantStream
 
-    override fun processUserUpload(userId: String, file: MultipartFile) {
-        // 2. 解析文档
-        val parser: DocumentParser = ApacheTikaDocumentParser()
-        val document: Document = parser.parse(file.inputStream)
+    @Autowired
+    private lateinit var imageGeneration: ImageGeneration
 
-        // 3. 切片 (保持语义连贯)
-        val splitter = DocumentSplitters.recursive(500, 50)
-        val segments: MutableList<TextSegment> = splitter.split(document)
+    @Autowired
+    private lateinit var imageGenerationParam: ImageGenerationParam
 
-        val ids: MutableList<String> = ArrayList()
-        val embeddings: MutableList<Embedding> = ArrayList()
+    private val executorService: ExecutorService = Executors.newFixedThreadPool(3)
 
-        //1. 生成文件唯一哈希 (用于防重)
-        val fileBytes: ByteArray = file.bytes
-        val fileHash: String = DigestUtils.md5Hex(fileBytes)
+    override fun chat(userId: String, message: String): String {
+        return assistant.chat(userId, message)
+    }
 
-        for (i in segments.indices) {
-            val segment: TextSegment = segments[i]
-            // 4. 安全：强制注入用户元数据，确保查询隔离
-            segment.metadata().put("userId", userId)
-            segment.metadata().put("fileHash", fileHash)
-
-            // 5. 防重：生成确定性 ID (文件哈希 + 片段索引)
-            // 这样即便用户重复上传同一个文件，Chroma 也会因为 ID 相同执行 Upsert 而非新增
-            val segmentId = "$fileHash-$i"
-
-            ids.add(segmentId)
-            embeddings.add(embeddingModel.embed(segment).content())
+    override fun chatStream(
+        userId: String,
+        message: String
+    ): SseEmitter {
+        val emitter = SseEmitter()
+        executorService.execute {
+            assistantStream.chat(userId, message)
+                .onPartialResponse { token ->
+                    try {
+                        // SseEmitter 会自动处理 data: 前缀和编码
+                        emitter.send(SseEmitter.event().data(token))
+                    } catch (e: Exception) {
+                        emitter.completeWithError(e)
+                    }
+                }
+                .onCompleteResponse { _ -> emitter.complete() }
+                .onError({ err ->
+                    emitter.completeWithError(err)
+                })
+                .start()
         }
+        return emitter
+    }
 
-        // 6. 批量写入，提高效率
-        embeddingStore.addAll(ids, embeddings, segments)
-        println("用户 $userId 的文件处理完成，ID: $fileHash")
+    override fun image(message: String): String {
+        val generationMessage: ImageGenerationMessage = ImageGenerationMessage.builder()
+            .role("user")
+            .content(
+                mutableListOf<MutableMap<String, Any>>(
+                    Collections.singletonMap(
+                        "text",
+                        message
+                    )
+                )
+            ).build()
+        val taskResult: ImageGenerationResult?
+        try {
+            imageGenerationParam.messages = Collections.singletonList(generationMessage)
+            println("----async call, creating task----")
+            taskResult = imageGeneration.asyncCall(imageGenerationParam)
+        } catch (e: ApiException) {
+            throw RuntimeException(e.message)
+        } catch (e: NoApiKeyException) {
+            throw RuntimeException(e.message)
+        } catch (e: UploadFileException) {
+            throw RuntimeException(e.message)
+        }
+        println("Task created: " + JsonUtils.toJson(taskResult))
+        // 等待任务完成
+        val taskId = taskResult.output.taskId
+        val result = waitTask(taskId)
+        return JsonUtils.toJson(result)
     }
 }

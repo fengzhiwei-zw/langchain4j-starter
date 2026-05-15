@@ -1,14 +1,19 @@
 package com.feng.langchain4jstarter.service
 
-import org.springframework.web.multipart.MultipartFile
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
 
 interface AiService {
 
-    fun processUserUpload(userId: String, file: MultipartFile) {
-        println("AiService")
+    fun chat(userId: String, message: String): String {
+        throw NotImplementedError()
     }
 
-    fun queryDocument(documentId: String, fileHash: String): String {
-        return "AiService"
+    fun chatStream(userId: String, message: String): SseEmitter {
+        throw NotImplementedError()
     }
+
+    fun image(message: String): String {
+        throw NotImplementedError()
+    }
+
 }

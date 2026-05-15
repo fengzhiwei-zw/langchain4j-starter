@@ -4,7 +4,6 @@ import com.feng.langchain4jstarter.listener.AiCompletedListener
 import com.feng.langchain4jstarter.listener.AiRequestListener
 import com.feng.langchain4jstarter.listener.AiResponseListener
 import com.feng.langchain4jstarter.listener.AiToolExecutedListener
-import com.feng.langchain4jstarter.service.AiService
 import com.feng.langchain4jstarter.service.Assistant
 import com.feng.langchain4jstarter.service.AssistantStream
 import com.feng.langchain4jstarter.tool.DocumentTool
@@ -48,13 +47,6 @@ class AiConfig {
             .baseUrl("http://localhost:8000")   // Chroma 服务地址
             .collectionName("ai-chroma-service")
             .build();
-    }
-
-    @Bean
-    fun searchDocumentTool(
-        aiService: AiService
-    ): DocumentTool {
-        return DocumentTool(aiService)
     }
 
     @Bean
