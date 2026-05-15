@@ -84,34 +84,6 @@ class AiConfig {
         }
     }
 
-    //@Bean
-    //fun streamingChatModel(): StreamingChatModel {
-    //    return OpenAiStreamingChatModel.builder()
-    //        .httpClientBuilder(SpringRestClient.builder())
-    //        .apiKey(apiKey)
-    //        .baseUrl(baseUrl)
-    //        .modelName(streamModelName)
-    //        //.listeners(listOf<ChatModelListener>()) // 手动挂载，确保 100% 生效
-    //        .timeout(Duration.ofSeconds(600))
-    //        .logRequests(true)
-    //        .logResponses(true)
-    //        .build()
-    //}
-    //
-    //@Bean
-    //fun chatLanguageModel(): ChatModel {
-    //    return OpenAiChatModel.builder()
-    //        .httpClientBuilder(SpringRestClient.builder())
-    //        .apiKey(apiKey)
-    //        .baseUrl(baseUrl)
-    //        .modelName(modelName) // 解决你的报错：显式控制参数
-    //        //.listeners(listOf<ChatModelListener>()) // 手动挂载，确保 100% 生效
-    //        .timeout(Duration.ofSeconds(600))
-    //        .logRequests(true)
-    //        .logResponses(true)
-    //        .build()
-    //}
-
     @Bean
     fun assistant(
         chatModel: ChatModel,
@@ -146,6 +118,7 @@ class AiConfig {
             .build()
     }
 
+    @Deprecated("工程启动时加载文件")
     private fun loadPdfIntoStore(store: EmbeddingStore<TextSegment>, model: EmbeddingModel) {
         // 1. 加载 PDF 文件
         val document = FileSystemDocumentLoader.loadDocument(
