@@ -32,11 +32,10 @@ class ApiResponse<E> private constructor(
                 .build()
         }
 
-        fun <E> failure(code: Int, message: String?, data: E? = null): ApiResponse<E> {
+        fun <E> fail(code: Int, message: String?): ApiResponse<E> {
             return builder<E>()
                 .code(code)
                 .message(message)
-                .data(data)
                 .build()
         }
     }
