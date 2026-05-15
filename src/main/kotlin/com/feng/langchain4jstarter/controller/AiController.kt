@@ -1,5 +1,6 @@
 package com.feng.langchain4jstarter.controller
 
+import com.feng.langchain4jstarter.model.ApiResponse
 import com.feng.langchain4jstarter.service.AiService
 import com.feng.langchain4jstarter.service.FileService
 import org.springframework.beans.factory.annotation.Autowired
@@ -23,8 +24,8 @@ class AiController {
     fun chat(
         @RequestParam(defaultValue = "default-session") sessionId: String,
         @RequestBody message: String
-    ): String {
-        return aiService.chat(sessionId, message)
+    ): ApiResponse<String> {
+        return ApiResponse.success(aiService.chat(sessionId, message))
     }
 
     @PostMapping(value = ["/chatStream"], produces = [MediaType.TEXT_EVENT_STREAM_VALUE]) // 必须指定 produces
@@ -39,13 +40,13 @@ class AiController {
     fun addChromaEmbedding(
         @RequestParam(defaultValue = "default-session") sessionId: String,
         @RequestParam("file") file: MultipartFile
-        ): String {
+        ): ApiResponse<String> {
         fileService.processUserUpload(sessionId, file)
-        return "知识库添加成功！！！"
+        return ApiResponse.success("知识库添加成功！！！")
     }
 
     @PostMapping("/image")
-    fun image(@RequestParam message: String): String {
-        return aiService.image(message)
+    fun image(@RequestParam message: String): ApiResponse<String> {
+        return ApiResponse.success(aiService.image(message))
     }
 }

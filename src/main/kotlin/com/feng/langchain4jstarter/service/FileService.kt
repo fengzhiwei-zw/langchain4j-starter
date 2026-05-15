@@ -4,11 +4,7 @@ import org.springframework.web.multipart.MultipartFile
 
 interface FileService {
 
-    fun processUserUpload(userId: String, file: MultipartFile) {
-        throw NotImplementedError()
-    }
+    fun processUserUpload(userId: String, file: MultipartFile)
 
-    fun queryDocument(documentId: String, queryText: String): String {
-        throw NotImplementedError()
-    }
+    fun queryDocument(documentId: String, queryText: String): String
 }

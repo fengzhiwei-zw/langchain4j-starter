@@ -4,16 +4,10 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
 
 interface AiService {
 
-    fun chat(userId: String, message: String): String {
-        throw NotImplementedError()
-    }
+    fun chat(userId: String, message: String): String
 
-    fun chatStream(userId: String, message: String): SseEmitter {
-        throw NotImplementedError()
-    }
+    fun chatStream(userId: String, message: String): SseEmitter
 
-    fun image(message: String): String {
-        throw NotImplementedError()
-    }
+    fun image(message: String): String
 
 }
