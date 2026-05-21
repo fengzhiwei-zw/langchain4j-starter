@@ -16,6 +16,8 @@ import org.apache.commons.codec.digest.DigestUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
+import java.io.File
+import java.io.InputStream
 import java.util.stream.Collectors.joining
 
 @Service
@@ -42,10 +44,19 @@ class FileServiceImpl: FileService {
         return collect.ifEmpty { "您没有查询此文档的权限，请联系管理员！" }
     }
 
+    override fun saveUserFile(userId: String, filePath: String) {
+        val file = File(filePath)
+        processUserUpload(userId, file.inputStream(), file.readBytes())
+    }
+
     override fun processUserUpload(userId: String, file: MultipartFile) {
+        processUserUpload(userId, file.inputStream, file.bytes)
+    }
+
+    override fun processUserUpload(userId: String, inputStream: InputStream, fileBytes: ByteArray) {
         // 2. 解析文档
         val parser: DocumentParser = ApacheTikaDocumentParser()
-        val document: Document = parser.parse(file.inputStream)
+        val document: Document = parser.parse(inputStream)
 
         // 3. 切片 (保持语义连贯)
         val splitter = DocumentSplitters.recursive(500, 50)
@@ -55,7 +66,6 @@ class FileServiceImpl: FileService {
         val embeddings: MutableList<Embedding> = ArrayList()
 
         //1. 生成文件唯一哈希 (用于防重)
-        val fileBytes: ByteArray = file.bytes
         val fileHash: String = DigestUtils.md5Hex(fileBytes)
 
         for (i in segments.indices) {
