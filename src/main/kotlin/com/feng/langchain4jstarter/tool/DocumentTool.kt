@@ -6,6 +6,8 @@ import dev.langchain4j.agent.tool.ToolMemoryId
 import dev.langchain4j.model.openai.OpenAiImageModel
 import org.springframework.stereotype.Component
 import org.springframework.web.multipart.MultipartFile
+import java.io.File
+import java.time.LocalTime
 
 @Component
 class DocumentTool(
@@ -30,6 +32,18 @@ class DocumentTool(
         println("【Tool generateImage Called】 $message")
         val response = openAiImageModel.generate(message)
         return response.content().url().toString()
+    }
+
+    @Tool("代码生成")
+    fun generateCode(@ToolMemoryId userId: String, code: String, extension:String, savePath: String): String {
+        val fileName = "${LocalTime.now().nano}.$extension"
+        val path = "$savePath/$fileName"
+        File(path).bufferedWriter(bufferSize = 64 * 1024).use { writer ->
+            // 将字面量的 "\n" 替换为当前系统的标准换行符（Windows下是\r\n，Mac/Linux下是\n）
+            val formattedCode = code.replace("\\n", System.lineSeparator())
+            writer.write(formattedCode)
+        }
+        return path
     }
 
 }

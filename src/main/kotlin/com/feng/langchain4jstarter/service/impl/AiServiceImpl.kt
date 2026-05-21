@@ -16,12 +16,10 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
 import java.util.*
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 
 
 @Service
-class AiServiceImpl : AiService{
+class AiServiceImpl : AiService {
 
     @Autowired
     private lateinit var assistant: Assistant
@@ -35,8 +33,6 @@ class AiServiceImpl : AiService{
     @Autowired
     private lateinit var imageGenerationParam: ImageGenerationParam
 
-    private val executorService: ExecutorService = Executors.newFixedThreadPool(3)
-
     override fun chat(userId: String, message: String): String {
         return assistant.chat(userId, message)
     }
@@ -46,22 +42,20 @@ class AiServiceImpl : AiService{
         message: String
     ): SseEmitter {
         val emitter = SseEmitter()
-        executorService.execute {
-            assistantStream.chat(userId, message)
-                .onPartialResponse { token ->
-                    try {
-                        // SseEmitter 会自动处理 data: 前缀和编码
-                        emitter.send(SseEmitter.event().data(token))
-                    } catch (e: Exception) {
-                        emitter.completeWithError(e)
-                    }
+        assistantStream.chat(userId, message)
+            .onPartialResponse { token ->
+                try {
+                    // SseEmitter 会自动处理 data: 前缀和编码
+                    emitter.send(SseEmitter.event().data(token))
+                } catch (e: Exception) {
+                    emitter.completeWithError(e)
                 }
-                .onCompleteResponse { _ -> emitter.complete() }
-                .onError({ err ->
-                    emitter.completeWithError(err)
-                })
-                .start()
-        }
+            }
+            .onCompleteResponse { _ -> emitter.complete() }
+            .onError({ err ->
+                emitter.completeWithError(err)
+            })
+            .start()
         return emitter
     }
 

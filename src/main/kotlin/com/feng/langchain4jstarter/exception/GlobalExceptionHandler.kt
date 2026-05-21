@@ -10,7 +10,7 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException::class)
     fun <T> handleBusinessException(e: BusinessException): ApiResponse<T> {
-        System.err.printf("business exception: %s", e)
+        System.err.printf("business exception: %s\n", e)
         return ApiResponse.fail(
             e.code,
             e.message
@@ -19,7 +19,7 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception::class)
     fun <T> handleException(e: Exception): ApiResponse<T> {
-        System.err.printf("system exception: %s", e)
+        System.err.printf("system exception: %s\n", e)
         return ApiResponse.fail(
             HttpStatus.INTERNAL_SERVER_ERROR.value(),
             "系统异常"
