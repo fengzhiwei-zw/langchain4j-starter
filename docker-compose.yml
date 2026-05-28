@@ -1,6 +1,23 @@
+version: '3.8'
 services:
   chroma:
     image: chromadb/chroma:latest
     container_name: ai-chroma-service
     ports:
       - "8000:8000"  # 格式为 "宿主机端口:容器内端口"
+      -
+  db:
+    image: mysql:latest
+    container_name: ai_mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - ./mysql_data:/var/lib/mysql # 数据持久化，防止容器删了数据丢失
+
+  cache:
+    image: redis:latest
+    container_name: ai_redis
+    ports:
+      - "6379:6379"

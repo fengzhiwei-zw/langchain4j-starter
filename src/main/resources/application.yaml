@@ -1,6 +1,29 @@
 spring:
   application:
     name: langchain4j-starter
+  output:
+    ansi:
+      enabled: always
+  datasource:
+    # 替换为你创建的数据库 ai_mysql
+    url: jdbc:mysql://127.0.0.1:3306/ai_mysql?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=GMT%2B8&characterEncoding=utf-8
+    username: root
+    password: ${MYSQL_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.MySQLDialect
+    # 生产环境建议设为 validate 或 none
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  Jackson:
+    # 设置日期格式
+    date-format: yyyy-MM-dd HH:mm:ss
+    # 强制不使用时间戳
+    serialization:
+      write-dates-as-timestamps: false
+    # 确保时区匹配
+    time-zone: GMT+8
 
 ai:
   dash-scope:
@@ -10,8 +33,10 @@ ai:
     stream-model-name: qwen3-8b
     model-name: qwen3.6-plus
     image-model-name: wan2.7-image-pro
+  default:
+    password: ${DEFAULT_PASSWORD}
 
-# LangChain4j 配置（通过 Starter 自动注入）
+# LangChain4j 配置（通过 Starter 自动注入，也可通过@Configuration配置，更灵活）
 langchain4j:
   open-ai:
     embedding-model:

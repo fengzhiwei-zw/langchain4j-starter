@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Java AI 助手</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 自定义滚动条样式 */
+        #chat-container::-webkit-scrollbar { width: 6px; }
+        #chat-container::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
+        .typing-dot { animation: typing 1.4s infinite; }
+        @keyframes typing { 0%, 20% { opacity: 0; } 50%, 100% { opacity: 1; } }
+
+        /* 全局背景与文字 */
+        body {
+            background-color: #f8fafc; /* 浅色 */
+            color: #0f172a;
+        }
+        .dark body {
+            background-color: #0f172a; /* 深色 */
+            color: #f1f5f9;
+        }
+
+        /* 主聊天容器 */
+        #chat-container {
+            background-color: #f8fafc;
+        }
+        .dark #chat-container {
+            background-color: #0f172a;
+        }
+
+        /* AI 消息框额外增强（可选） */
+        .dark .bg-white {
+            background-color: #1e2937 !important; /* slate-800 的更深版本 */
+        }
+        .dark .text-slate-800 {
+            color: #e2e8f0 !important;
+        }
+
+        /* 滚动条适配 */
+        #chat-container::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+        }
+        .dark #chat-container::-webkit-scrollbar-thumb {
+            background-color: #475569;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 h-screen flex flex-col text-slate-900 dark:text-slate-100">
+
+<header class="bg-white dark:bg-slate-900 shadow-sm p-4 text-center border-b border-slate-200 dark:border-slate-800">
+    <h1 class="text-xl font-bold text-slate-800 dark:text-slate-100">🚀 Spring Boot AI 专家</h1>
+    <div style="position: absolute; top: 10px; right: 20px;">
+        <button onclick="logout()">退出登录</button>
+    </div>
+    <script>
+        // 页面加载时根据系统主题设置 dark 类
+        function initTheme() {
+            if (localStorage.theme === 'dark' ||
+                (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        }
+
+        // 监听系统主题变化（macOS 切换浅色/深色时自动更新）
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            if (!('theme' in localStorage)) {  // 用户未手动设置时才跟随系统
+                document.documentElement.classList.toggle('dark', e.matches);
+            }
+        });
+
+        // 初始化
+        initTheme();
+        function logout() {
+            fetch("/logout", {
+                    method: "POST",   // 注意：默认 Spring Security logout 是 POST
+                    credentials: "include"
+                })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.msg);
+                    window.location.href = "/login.html"; // 跳转登录页
+                })
+                .catch(err => {
+                    console.error(err);
+                });
+        }
+    </script>
+</header>
+
+<main id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-4 max-w-4xl mx-auto w-full bg-slate-50 dark:bg-slate-950">
+    <!-- 原有欢迎消息示例 -->
+    <div class="flex justify-start">
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 max-w-[80%] shadow-sm text-slate-800 dark:text-slate-200">
+            你好！我是你的 Java 助手。有什么我可以帮你的？
+        </div>
+    </div>
+</main>
+
+<footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 p-4">
+    <div class="max-w-4xl mx-auto flex gap-2">
+        <input id="user-input" type="text"
+               class="flex-1 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
+               placeholder="输入你的问题...">
+        <button id="send-btn"
+                class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition">
+            发送
+        </button>
+    </div>
+</footer>
+
+<script>
+    const chatContainer = document.getElementById('chat-container');
+    const userInput = document.getElementById('user-input');
+    const sendBtn = document.getElementById('send-btn');
+
+    function appendMessage(role, text) {
+        const wrapper = document.createElement('div');
+        wrapper.className = role === 'user' ? 'flex justify-end' : 'flex justify-start';
+
+        const content = document.createElement('div');
+        content.className = role === 'user'
+            ? 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white rounded-2xl px-4 py-3 max-w-[80%] shadow-md transition-colors'
+            : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 max-w-[80%] shadow-sm text-slate-800 dark:text-slate-200 transition-colors';
+
+        content.innerText = text;
+        wrapper.appendChild(content);
+        chatContainer.appendChild(wrapper);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+        return content;
+    }
+
+    async function sendMessage() {
+        const msg = userInput.value.trim();
+        if (!msg) return;
+
+        // 1. 显示用户消息
+        appendMessage('user', msg);
+        userInput.value = '';
+
+        // 2. 创建 AI 消息占位符
+        const aiMsgBox = appendMessage('ai', '...');
+        aiMsgBox.innerText = ''; // 清空占位
+
+        // 3. 建立 SSE 连接
+        // 注意：这里需要替换为你真实的 userId 逻辑，暂用随机数模拟
+        const eventSource = new EventSource(`http://localhost:8080/chatStream?msg=${encodeURIComponent(msg)}`);
+
+        eventSource.onmessage = (event) => {
+            // 将接收到的 token 实时追加到 AI 消息框
+            aiMsgBox.innerText += event.data;
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        };
+
+        eventSource.onerror = (err) => {
+            console.error("SSE Error:", err);
+            eventSource.close();
+        };
+    }
+
+    sendBtn.onclick = sendMessage;
+    userInput.onkeypress = (e) => { if (e.key === 'Enter') sendMessage(); };
+</script>
+</body>
+</html>

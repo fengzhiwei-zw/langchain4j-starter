@@ -56,7 +56,7 @@ class AiConfig {
     ): ContentRetriever {
         // 自动将 PDF 数据注入存储（实际生产建议启动时异步加载或预热）
 
-        //loadPdfIntoStore(embeddingStore, embeddingModel)
+        // loadPdfIntoStore(embeddingStore, embeddingModel)
 
         return EmbeddingStoreContentRetriever.builder()
             .embeddingStore(embeddingStore)
@@ -75,6 +75,33 @@ class AiConfig {
                 .build()
         }
     }
+
+    // 可在yaml文件中自动装配
+    // @Bean
+    // fun openAiStreamingChatModel(myAiObserver: MyAiObserver): StreamingChatModel {
+    //     return OpenAiStreamingChatModel.builder()
+    //         .apiKey("apiKey")
+    //         .baseUrl("baseUrl")
+    //         .modelName("streamModelName")
+    //         // .listeners(myAiObserver) // 手动挂载，确保 100% 生效
+    //         .timeout(Duration.ofSeconds(600))
+    //         .logRequests(true)
+    //         .logResponses(true)
+    //         .build()
+    // }
+    //
+    // @Bean
+    // fun chatLanguageModel(myAiObserver: MyAiObserver): ChatModel {
+    //     return OpenAiChatModel.builder()
+    //         .apiKey("apiKey")
+    //         .baseUrl("baseUrl")
+    //         .modelName("modelName")
+    //         // .listeners(myAiObserver) // 手动挂载，确保 100% 生效
+    //         .timeout(Duration.ofSeconds(600))
+    //         .logRequests(true)
+    //         .logResponses(true)
+    //         .build()
+    // }
 
     @Bean
     fun assistant(
