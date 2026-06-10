@@ -1,8 +1,10 @@
 package com.feng.langchain4jstarter.tool
 
 import com.feng.langchain4jstarter.dto.UserSaveDTO
+import com.feng.langchain4jstarter.exception.BusinessException
 import com.feng.langchain4jstarter.pojo.User
 import com.feng.langchain4jstarter.service.impl.UserServiceImpl
+import com.feng.langchain4jstarter.util.SecurityUtil
 import dev.langchain4j.agent.tool.Tool
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.beans.factory.annotation.Autowired
@@ -35,6 +37,10 @@ class UserTool {
     fun findAll(): MutableList<User> {
         // 校验该订单是否属于当前用户（逻辑省略）
         println("【审计】用户正在通过 AI 查询所有用户")
+        val currentUser = SecurityUtil.username
+        if (currentUser != "admin") {
+            throw BusinessException(403, "无权执行此操作")
+        }
         return userService.findAll()
     }
 
@@ -49,6 +55,10 @@ class UserTool {
     fun updateByUsername(username: String, nickname: String, email: String, phone: String): User {
         // 校验该订单是否属于当前用户（逻辑省略）
         println("【审计】用户正在通过 AI 修改用户")
+        val currentUser = SecurityUtil.username
+        if (currentUser != "admin") {
+            throw BusinessException(403, "无权执行此操作")
+        }
         return userService.updateByUsername(UserSaveDTO(username, nickname, email, phone))
     }
 
@@ -56,6 +66,10 @@ class UserTool {
     fun updatePasswordByUsername(username: String, password: String) {
         // 校验该订单是否属于当前用户（逻辑省略）
         println("【审计】用户正在通过 AI 修改用户密码")
+        val currentUser = SecurityUtil.username
+        if (currentUser != "admin") {
+            throw BusinessException(403, "无权执行此操作")
+        }
         userService.updatePasswordByUsername(username, password)
     }
 
@@ -63,6 +77,10 @@ class UserTool {
     fun deleteByUsername(username: String): User {
         // 校验该订单是否属于当前用户（逻辑省略）
         println("【审计】用户正在通过 AI 删除用户")
+        val currentUser = SecurityUtil.username
+        if (currentUser != "admin") {
+            throw BusinessException(403, "无权执行此操作")
+        }
         return userService.deleteByUsername(username)
     }
 }

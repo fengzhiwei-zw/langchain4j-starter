@@ -64,6 +64,12 @@
             <version>${langchain4j.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-community-redis-spring-boot-starter</artifactId>
+            <version>${langchain4j.version}</version>
+        </dependency>
+
         <!-- Embedding 模型（推荐 bge-small 或 all-MiniLM） -->
 <!--        <dependency>-->
 <!--            <groupId>dev.langchain4j</groupId>-->

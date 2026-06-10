@@ -8,6 +8,7 @@ import com.feng.langchain4jstarter.service.Assistant
 import com.feng.langchain4jstarter.service.AssistantStream
 import com.feng.langchain4jstarter.tool.DocumentTool
 import com.feng.langchain4jstarter.tool.WeatherTool
+import dev.langchain4j.community.store.memory.chat.redis.RedisChatMemoryStore
 import dev.langchain4j.data.document.loader.FileSystemDocumentLoader
 import dev.langchain4j.data.document.parser.apache.tika.ApacheTikaDocumentParser
 import dev.langchain4j.data.document.splitter.DocumentSplitters
@@ -23,6 +24,7 @@ import dev.langchain4j.service.AiServices
 import dev.langchain4j.store.embedding.EmbeddingStore
 import dev.langchain4j.store.embedding.chroma.ChromaApiVersion
 import dev.langchain4j.store.embedding.chroma.ChromaEmbeddingStore
+import dev.langchain4j.store.memory.chat.ChatMemoryStore
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
@@ -67,11 +69,20 @@ class AiConfig {
     }
 
     @Bean
-    fun chatMemoryProvider(): ChatMemoryProvider {
-        return ChatMemoryProvider { memoryId: Any? ->
+    fun chatMemoryStore(): ChatMemoryStore {
+        return RedisChatMemoryStore.builder()
+            .host("localhost").port(6379)
+            .ttl(3600)
+            .build()
+    }
+
+    @Bean
+    fun chatMemoryProvider(chatMemoryStore: ChatMemoryStore): ChatMemoryProvider {
+        return ChatMemoryProvider { memoryId: Any ->
             MessageWindowChatMemory.builder()
                 .id(memoryId) // 每个会话独立的 Memory
                 .maxMessages(10) // 保留最近 10 条消息（可根据需要调整）
+                .chatMemoryStore(chatMemoryStore)
                 .build()
         }
     }

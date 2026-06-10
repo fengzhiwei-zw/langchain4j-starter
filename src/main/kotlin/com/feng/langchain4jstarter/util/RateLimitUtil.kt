@@ -2,10 +2,11 @@ package com.feng.langchain4jstarter.util
 
 import io.github.bucket4j.Bandwidth
 import io.github.bucket4j.Bucket
+import org.springframework.stereotype.Component
 import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
 
-
+@Component
 class RateLimitUtil {
     // 使用 ConcurrentHashMap 存储所有用户的桶
     private val buckets: MutableMap<Long, Bucket> = ConcurrentHashMap<Long, Bucket>()
