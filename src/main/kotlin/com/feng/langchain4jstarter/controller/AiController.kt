@@ -28,7 +28,7 @@ class AiController {
 
     @PostMapping("/chat")
     fun chat(@RequestBody message: String): ApiResponse<String> {
-        return ApiResponse.success(aiService.chat(SecurityUtil.userId.toString(), message))
+        return ApiResponse.success(aiService.chat(SecurityUtil.userId, message))
     }
 
     @PostMapping(value = ["/chatStream"], produces = [MediaType.TEXT_EVENT_STREAM_VALUE]) // 必须指定 produces
@@ -37,12 +37,12 @@ class AiController {
         if (!rateLimitUtil.tryConsume(userId)) {
             throw BusinessException(429, "请求过于频繁，请稍后再试")
         }
-        return aiService.chatStream(userId.toString(), message)
+        return aiService.chatStream(userId, message)
     }
 
     @PostMapping("/chromaEmbedding")
     fun addChromaEmbedding(@RequestParam("file") file: MultipartFile): ApiResponse<String> {
-        fileService.processUserUpload(SecurityUtil.userId.toString(), file)
+        fileService.processUserUpload(SecurityUtil.userId, file)
         return ApiResponse.success("知识库添加成功！！！")
     }
 

@@ -146,19 +146,53 @@
         aiMsgBox.innerText = ''; // 清空占位
 
         // 3. 建立 SSE 连接
-        // 注意：这里需要替换为你真实的 userId 逻辑，暂用随机数模拟
-        const eventSource = new EventSource(`http://localhost:8080/chatStream?msg=${encodeURIComponent(msg)}`);
+        const resp = await fetch('/ai/chatStream', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: `message=${encodeURIComponent(msg)}`,
+            credentials: 'include'
+        });
+        if (!resp.ok) {
+            throw new Error(`HTTP 错误! 状态码: ${resp.status}`);
+        }
+        // 2. 获取读取器与解码器
+        const reader = resp.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+        let buffer = ''; // 缓存区，处理可能出现的断包/黏包
 
-        eventSource.onmessage = (event) => {
-            // 将接收到的 token 实时追加到 AI 消息框
-            aiMsgBox.innerText += event.data;
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        };
+        // 3. 开启循环，逐块读取流数据
+        while (true) {
+            const { value, done } = await reader.read();
+            if (done) {
+                console.log('SSE 连接已正常关闭');
+                break;
+            }
 
-        eventSource.onerror = (err) => {
-            console.error("SSE Error:", err);
-            eventSource.close();
-        };
+            // 将二进制数据解码并拼入缓存
+            buffer += decoder.decode(value, { stream: true });
+
+            // 按照 SSE 规范的换行符分割消息
+            const parts = buffer.split('\n\n');
+            buffer = parts.pop() || ''; // 悬空的半截数据留到下次处理
+
+            for (const part of parts) {
+                const line = part.trim();
+                if (!line) continue;
+
+                if (line.startsWith('data:')) {
+                    // 提取真正的文本内容
+                    const token = line.replace(/^data:\s*/, '');
+
+                    // 如果后端有约定的结束标记（如 [DONE]），可以提前结束
+                    if (token === '[DONE]') {
+                        await reader.cancel(); // 主动关闭流
+                        return;
+                    }
+                    aiMsgBox.innerText += token;
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                }
+            }
+        }
     }
 
     sendBtn.onclick = sendMessage;

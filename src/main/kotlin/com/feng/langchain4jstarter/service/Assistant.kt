@@ -11,5 +11,5 @@ You are a helpful, professional AI assistant.
 Answer concisely and accurately. 
 Maintain context from previous messages.
 """)
-    fun chat(@MemoryId memoryId: String, @UserMessage userMessage: String): String
+    fun chat(@MemoryId memoryId: Long, @UserMessage userMessage: String): String
 }

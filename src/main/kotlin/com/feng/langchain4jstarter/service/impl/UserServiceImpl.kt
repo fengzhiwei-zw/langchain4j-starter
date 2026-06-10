@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.*
 
 
 @Service
@@ -32,8 +31,8 @@ class UserServiceImpl: UserService {
         return userRepository.findAll()
     }
 
-    fun findById(id: Long): Optional<User> {
-        return userRepository.findById(id)
+    fun findById(id: Long): User {
+        return userRepository.findById(id).orElseThrow { BusinessException(404, "用户不存在") }
     }
 
     fun findByUsername(name: String): User {
@@ -42,48 +41,50 @@ class UserServiceImpl: UserService {
 
     @Transactional
     fun save(userSaveDTO: UserSaveDTO): User {
-        val user: User = User()
-        user.setUsername(userSaveDTO.username)
-            .setEmail(userSaveDTO.email)
-            .setNickname(userSaveDTO.nickname)
-            .setPhone(userSaveDTO.phone)
-            .setStatus(EnableStatusEnum.ENABLE.status)
-            .setIsDeleted(DeletedStatusEnum.UN_DELETED.status)
-        // 关键点：调用 encode 方法
-        val encodedPassword = passwordEncoder.encode(defaultPassword)
-        user.setPassword(encodedPassword)
+        val user = User().apply {
+            username = userSaveDTO.username
+            email = userSaveDTO.email
+            nickname = userSaveDTO.nickname
+            phone = userSaveDTO.phone
+            status = EnableStatusEnum.ENABLE.status
+            isDeleted = DeletedStatusEnum.UN_DELETED.status
+            // 关键点：调用 encode 方法
+            val encodedPassword = passwordEncoder.encode(defaultPassword)
+            password = encodedPassword
+        }
         return userRepository.save(user)
     }
 
     @Transactional
     fun updateByUsername(userSaveDTO: UserSaveDTO): User {
-        val byUsername: User = userRepository.findByUsername(userSaveDTO.username)
-            .orElseThrow { BusinessException(404, "用户不存在") }
-        if (StringUtils.isNotBlank(userSaveDTO.phone)) {
-            byUsername.setPhone(userSaveDTO.phone)
-        }
-        if (StringUtils.isNotBlank(userSaveDTO.email)) {
-            byUsername.setEmail(userSaveDTO.email)
-        }
-        if (StringUtils.isNotBlank(userSaveDTO.nickname)) {
-            byUsername.setNickname(userSaveDTO.nickname)
-        }
-        return byUsername
+        return userRepository.findByUsername(userSaveDTO.username)
+            .orElseThrow { BusinessException(404, "用户不存在") }.apply {
+                if (StringUtils.isNotBlank(userSaveDTO.phone)) {
+                    phone = userSaveDTO.phone
+                }
+                if (StringUtils.isNotBlank(userSaveDTO.email)) {
+                    email = userSaveDTO.email
+                }
+                if (StringUtils.isNotBlank(userSaveDTO.nickname)) {
+                    nickname = userSaveDTO.nickname
+                }
+            }
     }
 
     @Transactional
     fun deleteByUsername(username: String): User {
-        val byUsername: User = userRepository.findByUsername(username).orElseThrow { BusinessException(404, "用户不存在") }
-        byUsername.setIsDeleted(DeletedStatusEnum.DELETED.status)
-        return byUsername
+        return userRepository.findByUsername(username).orElseThrow { BusinessException(404, "用户不存在") }
+            .apply {
+                isDeleted = DeletedStatusEnum.DELETED.status
+            }
     }
 
     @Transactional
     fun updatePasswordByUsername(username: String, password: String) {
-        val byUsername: User = userRepository.findByUsername(username).orElseThrow { BusinessException(404, "用户不存在") }
-        // 关键点：调用 encode 方法
-        val encodedPassword = passwordEncoder.encode(password)
-        byUsername.setPassword(encodedPassword)
+        userRepository.findByUsername(username).orElseThrow { BusinessException(404, "用户不存在") }
+            .apply {
+                this.password = passwordEncoder.encode(password)
+            }
     }
 
     fun login(username: String, rawPassword: String): Boolean {

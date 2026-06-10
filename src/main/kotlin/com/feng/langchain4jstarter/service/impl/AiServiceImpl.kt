@@ -33,12 +33,12 @@ class AiServiceImpl : AiService {
     @Autowired
     private lateinit var imageGenerationParam: ImageGenerationParam
 
-    override fun chat(userId: String, message: String): String {
+    override fun chat(userId: Long, message: String): String {
         return assistant.chat(userId, message)
     }
 
     override fun chatStream(
-        userId: String,
+        userId: Long,
         message: String
     ): SseEmitter {
         val emitter = SseEmitter()

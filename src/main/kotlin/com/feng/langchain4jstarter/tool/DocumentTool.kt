@@ -15,26 +15,26 @@ class DocumentTool(
 ) {
 
     @Tool("保存用户文件")
-    fun saveUserFile(@ToolMemoryId userId: String, filePath: String) {
+    fun saveUserFile(@ToolMemoryId userId: Long, filePath: String) {
         println("【Tool saveUserFile Called】")
         fileService.saveUserFile(userId, filePath)
     }
 
     @Tool("查询文件内容")
-    fun searchFileContent(@ToolMemoryId userId: String, queryText: String): String {
+    fun searchFileContent(@ToolMemoryId userId: Long, queryText: String): String {
         println("【Tool search Called】")
         return fileService.queryDocument(userId, queryText)
     }
 
     @Tool("生成图像")
-    fun generateImage(@ToolMemoryId userId: String, message: String): String {
+    fun generateImage(@ToolMemoryId userId: Long, message: String): String {
         println("【Tool generateImage Called】")
         val response = openAiImageModel.generate(message)
         return response.content().url().toString()
     }
 
     @Tool("代码生成")
-    fun generateCode(@ToolMemoryId userId: String, code: String, extension:String, savePath: String): String {
+    fun generateCode(@ToolMemoryId userId: Long, code: String, extension:String, savePath: String): String {
         println("【Tool generateCode Called】")
         val fileName = "${LocalTime.now().nano}.$extension"
         val path = "$savePath/$fileName"

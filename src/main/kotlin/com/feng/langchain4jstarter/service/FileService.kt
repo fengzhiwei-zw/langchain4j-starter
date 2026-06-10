@@ -5,11 +5,11 @@ import java.io.InputStream
 
 interface FileService {
 
-    fun processUserUpload(userId: String, file: MultipartFile)
+    fun processUserUpload(userId: Long, file: MultipartFile)
 
-    fun processUserUpload(userId: String, inputStream: InputStream, fileBytes: ByteArray)
+    fun processUserUpload(userId: Long, inputStream: InputStream, fileBytes: ByteArray)
 
-    fun queryDocument(documentId: String, queryText: String): String
+    fun queryDocument(userId: Long, queryText: String): String
 
-    fun saveUserFile(userId: String, filePath: String)
+    fun saveUserFile(userId: Long, filePath: String)
 }

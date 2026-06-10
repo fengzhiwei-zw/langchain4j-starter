@@ -11,94 +11,42 @@ import java.time.LocalDateTime
 @Entity
 @Table(name = "user")
 @EntityListeners(AuditingEntityListener::class) // 开启审计监听
-class User {
+class User(
+    // 1. 将主要属性放入主构造函数中，并提供默认值
+
+    @Column(nullable = false, unique = true)
+    var username: String = "",
+
+    @Column(nullable = false)
+    var password: String = "",
+
+    var nickname: String = "",
+
+    var email: String? = null, // 数据库允许为 null 的字段，用 String?
+
+    var phone: String? = null,
+
+    var status: Int = 0,
+
+    @Column(name = "is_deleted")
+    var isDeleted: Int = 0
+
+) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long = 0
         private set
-    lateinit var username: String
-        private set
-    lateinit var password: String
-        private set
-    lateinit var nickname: String
-        private set
-    lateinit var email: String
-        private set
-    lateinit var phone: String
-        private set
-    var status: Int = 0
-        private set
 
-    @Column(name = "is_deleted")
-    var isDeleted: Int = 0
-        private set
-
-    @Column(name = "create_time")
+    @Column(name = "create_time", updatable = false)
     @CreatedDate
-    lateinit // 自动填入创建时间
-    var createTime: LocalDateTime
+    // 自动填入创建时间
+    var createTime: LocalDateTime? = null
         private set
 
     @Column(name = "update_time")
     @LastModifiedDate // 自动填入修改时间
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
-    lateinit var updateTime: LocalDateTime
+    var updateTime: LocalDateTime? = null
         private set
 
-    fun setId(id: Long): User {
-        this.id = id
-        return this
-    }
-
-
-    fun setUsername(username: String): User {
-        this.username = username
-        return this
-    }
-
-
-    fun setPassword(password: String): User {
-        this.password = password
-        return this
-    }
-
-
-    fun setNickname(nickname: String): User {
-        this.nickname = nickname
-        return this
-    }
-
-
-    fun setEmail(email: String): User {
-        this.email = email
-        return this
-    }
-
-
-    fun setPhone(phone: String): User {
-        this.phone = phone
-        return this
-    }
-
-
-    fun setStatus(status: Int): User {
-        this.status = status
-        return this
-    }
-
-
-    fun setCreateTime(createTime: LocalDateTime): User {
-        this.createTime = createTime
-        return this
-    }
-
-    fun setUpdateTime(updateTime: LocalDateTime): User {
-        this.updateTime = updateTime
-        return this
-    }
-
-    fun setIsDeleted(isDeleted: Int): User {
-        this.isDeleted = isDeleted
-        return this
-    }
 }

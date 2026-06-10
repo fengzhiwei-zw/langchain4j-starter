@@ -29,12 +29,12 @@ class FileServiceImpl: FileService {
     @Autowired
     private lateinit var embeddingStore: EmbeddingStore<TextSegment>
 
-    override fun queryDocument(documentId: String, queryText: String): String {
+    override fun queryDocument(userId: Long, queryText: String): String {
         val queryEmbedding = embeddingModel.embed(queryText).content()
         // 生产环境必须：只查询当前用户的数据
         val searchRequest = EmbeddingSearchRequest.builder()
             .queryEmbedding(queryEmbedding)
-            .filter(metadataKey("userId").isEqualTo(documentId))
+            .filter(metadataKey("userId").isEqualTo(userId))
             .maxResults(5)
             .build()
         val collect = embeddingStore.search(searchRequest)
@@ -44,16 +44,16 @@ class FileServiceImpl: FileService {
         return collect.ifEmpty { "您没有查询此文档的权限，请联系管理员！" }
     }
 
-    override fun saveUserFile(userId: String, filePath: String) {
+    override fun saveUserFile(userId: Long, filePath: String) {
         val file = File(filePath)
         processUserUpload(userId, file.inputStream(), file.readBytes())
     }
 
-    override fun processUserUpload(userId: String, file: MultipartFile) {
+    override fun processUserUpload(userId: Long, file: MultipartFile) {
         processUserUpload(userId, file.inputStream, file.bytes)
     }
 
-    override fun processUserUpload(userId: String, inputStream: InputStream, fileBytes: ByteArray) {
+    override fun processUserUpload(userId: Long, inputStream: InputStream, fileBytes: ByteArray) {
         // 2. 解析文档
         val parser: DocumentParser = ApacheTikaDocumentParser()
         val document: Document = parser.parse(inputStream)
