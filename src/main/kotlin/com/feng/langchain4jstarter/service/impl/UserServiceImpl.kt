@@ -3,6 +3,7 @@ package com.feng.langchain4jstarter.service.impl
 import com.feng.langchain4jstarter.constant.DeletedStatusEnum
 import com.feng.langchain4jstarter.constant.EnableStatusEnum
 import com.feng.langchain4jstarter.dto.UserSaveDTO
+import com.feng.langchain4jstarter.exception.BusinessException
 import com.feng.langchain4jstarter.pojo.User
 import com.feng.langchain4jstarter.repository.UserRepository
 import com.feng.langchain4jstarter.service.UserService
@@ -36,7 +37,7 @@ class UserServiceImpl: UserService {
     }
 
     fun findByUsername(name: String): User {
-        return userRepository.findByUsername(name)
+        return userRepository.findByUsername(name).orElseThrow { BusinessException(404, "用户不存在") }
     }
 
     @Transactional
@@ -57,6 +58,7 @@ class UserServiceImpl: UserService {
     @Transactional
     fun updateByUsername(userSaveDTO: UserSaveDTO): User {
         val byUsername: User = userRepository.findByUsername(userSaveDTO.username)
+            .orElseThrow { BusinessException(404, "用户不存在") }
         if (StringUtils.isNotBlank(userSaveDTO.phone)) {
             byUsername.setPhone(userSaveDTO.phone)
         }
@@ -71,21 +73,21 @@ class UserServiceImpl: UserService {
 
     @Transactional
     fun deleteByUsername(username: String): User {
-        val byUsername: User = userRepository.findByUsername(username)
+        val byUsername: User = userRepository.findByUsername(username).orElseThrow { BusinessException(404, "用户不存在") }
         byUsername.setIsDeleted(DeletedStatusEnum.DELETED.status)
         return byUsername
     }
 
     @Transactional
     fun updatePasswordByUsername(username: String, password: String) {
-        val byUsername: User = userRepository.findByUsername(username)
+        val byUsername: User = userRepository.findByUsername(username).orElseThrow { BusinessException(404, "用户不存在") }
         // 关键点：调用 encode 方法
         val encodedPassword = passwordEncoder.encode(password)
         byUsername.setPassword(encodedPassword)
     }
 
     fun login(username: String, rawPassword: String): Boolean {
-        val user: User = userRepository.findByUsername(username)
+        val user: User = userRepository.findByUsername(username).orElseThrow { BusinessException(404, "用户不存在") }
 
         // 关键点：使用 matches 方法对比，不能直接用 equals
         return passwordEncoder.matches(rawPassword, user.password)

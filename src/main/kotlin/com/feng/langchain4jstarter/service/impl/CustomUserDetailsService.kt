@@ -1,6 +1,5 @@
 package com.feng.langchain4jstarter.service.impl
 
-import com.feng.langchain4jstarter.pojo.User
 import com.feng.langchain4jstarter.repository.UserRepository
 import com.feng.langchain4jstarter.util.LoginUser
 import org.springframework.beans.factory.annotation.Autowired
@@ -17,7 +16,7 @@ class CustomUserDetailsService : UserDetailsService {
 
     @Throws(UsernameNotFoundException::class)
     override fun loadUserByUsername(username: String?): UserDetails {
-        val userEntity: User = userRepository.findByUsername(username)
+        val userEntity = userRepository.findByUsername(username).get()
         val authorities: MutableList<GrantedAuthority> = ArrayList()
 
         // 获取角色、权限
