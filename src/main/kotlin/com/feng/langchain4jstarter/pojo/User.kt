@@ -26,7 +26,7 @@ class User(
 
     var phone: String? = null,
 
-    var status: Int = 0,
+    var status: Int = 1,
 
     @Column(name = "is_deleted")
     var isDeleted: Int = 0

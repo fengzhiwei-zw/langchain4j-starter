@@ -10,7 +10,6 @@ import dev.langchain4j.model.chat.listener.ChatModelListener
 import dev.langchain4j.model.chat.listener.ChatModelRequestContext
 import dev.langchain4j.model.chat.listener.ChatModelResponseContext
 import org.springframework.beans.factory.annotation.Autowired
-import java.time.LocalDateTime
 import java.util.concurrent.CompletableFuture
 
 // @Component
@@ -32,19 +31,19 @@ class MyAiObserver: ChatModelListener {
 
         // System.out.println("【监控】AI 回答完毕，耗时: " + duration + "ms");
         // System.out.println("【监控】Token 消耗: " + responseContext.response().tokenUsage().totalTokenCount());
-        val log = AiAuditLog()
-        log.setUserId(responseContext.attributes()["userId"] as Long)
-        val request = responseContext.chatRequest()
-        if (request != null) {
-            val userMessageList = request.messages().filterIsInstance<UserMessage>()
-            val textContents = userMessageList.last().contents().filterIsInstance<TextContent>()
-            log.setPrompt(textContents.last().text())
+        val log = AiAuditLog().apply {
+            userId = responseContext.attributes()["userId"] as Long
+            val request = responseContext.chatRequest()
+            if (request != null) {
+                val userMessageList = request.messages().filterIsInstance<UserMessage>()
+                val textContents = userMessageList.last().contents().filterIsInstance<TextContent>()
+                prompt = (textContents.last().text())
+            }
+            val response = responseContext.chatResponse()
+            this.response = (response.aiMessage().text())
+            totalTokens = (if (response.tokenUsage() != null) response.tokenUsage().totalTokenCount() else 0)
+            latencyMs = (latency)
         }
-        val response = responseContext.chatResponse()
-        log.setResponse(response.aiMessage().text())
-        log.setTotalTokens(if (response.tokenUsage() != null) response.tokenUsage().totalTokenCount() else 0)
-        log.setLatencyMs(latency)
-        log.setCreatedAt(LocalDateTime.now())
 
         CompletableFuture.runAsync(Runnable {
             aiAuditLogRepository.save(log) // 异步保存到数据库
