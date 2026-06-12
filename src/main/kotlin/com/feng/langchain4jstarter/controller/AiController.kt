@@ -2,6 +2,7 @@ package com.feng.langchain4jstarter.controller
 
 import com.feng.langchain4jstarter.exception.BusinessException
 import com.feng.langchain4jstarter.model.ApiResponse
+import com.feng.langchain4jstarter.pojo.ImageTask
 import com.feng.langchain4jstarter.service.AiService
 import com.feng.langchain4jstarter.service.FileService
 import com.feng.langchain4jstarter.util.RateLimitUtil
@@ -17,14 +18,9 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
 @RequestMapping("/ai")
 class AiController {
 
-    @Autowired
-    private lateinit var aiService: AiService
-
-    @Autowired
-    private lateinit var fileService: FileService
-
-    @Autowired
-    private lateinit var rateLimitUtil: RateLimitUtil
+    @Autowired private lateinit var aiService: AiService
+    @Autowired private lateinit var fileService: FileService
+    @Autowired private lateinit var rateLimitUtil: RateLimitUtil
 
     @PostMapping("/chat")
     fun chat(@RequestBody message: String): ApiResponse<String> {
@@ -42,12 +38,37 @@ class AiController {
 
     @PostMapping("/chromaEmbedding")
     fun addChromaEmbedding(@RequestParam("file") file: MultipartFile): ApiResponse<String> {
+
         fileService.processUserUpload(SecurityUtil.userId, file)
         return ApiResponse.success("知识库添加成功！！！")
     }
 
-    @PostMapping("/image")
+    @PostMapping("/image/block")
     fun image(@RequestParam message: String): ApiResponse<String> {
-        return ApiResponse.success(aiService.image(message))
+        return ApiResponse.success(aiService.imageAsync(message))
+    }
+
+    /**
+     * 提交文生图任务，立即返回 taskId
+     * 前端拿到 taskId 后定时轮询 /ai/imageResult 查询进度
+     */
+    @PostMapping("/image")
+    fun submitImage(@RequestParam message: String): ApiResponse<String> {
+        val userId = SecurityUtil.userId
+        val taskId = aiService.submitImageTask(userId, message)
+        return ApiResponse.success(taskId)
+    }
+
+    /**
+     * 查询图像生成结果
+     *
+     * 响应示例：
+     *   PENDING: { status: "PENDING" }
+     *   SUCCESS: { status: "SUCCESS", imageUrl: "https://..." }
+     *   FAILED:  { status: "FAILED",  errorMessage: "..." }
+     */
+    @GetMapping("/imageResult")
+    fun imageResult(@RequestParam taskId: String): ApiResponse<ImageTask> {
+        return ApiResponse.success(aiService.getImageTask(taskId))
     }
 }

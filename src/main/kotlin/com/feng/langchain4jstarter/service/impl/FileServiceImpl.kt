@@ -23,11 +23,8 @@ import java.util.stream.Collectors.joining
 @Service
 class FileServiceImpl: FileService {
 
-    @Autowired
-    private lateinit var embeddingModel: EmbeddingModel
-
-    @Autowired
-    private lateinit var embeddingStore: EmbeddingStore<TextSegment>
+    @Autowired private lateinit var embeddingModel: EmbeddingModel
+    @Autowired private lateinit var embeddingStore: EmbeddingStore<TextSegment>
 
     override fun queryDocument(userId: Long, queryText: String): String {
         val queryEmbedding = embeddingModel.embed(queryText).content()

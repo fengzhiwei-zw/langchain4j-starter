@@ -4,6 +4,7 @@ import com.feng.langchain4jstarter.service.FileService
 import dev.langchain4j.agent.tool.Tool
 import dev.langchain4j.agent.tool.ToolMemoryId
 import dev.langchain4j.model.openai.OpenAiImageModel
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.io.File
 import java.time.LocalTime
@@ -13,6 +14,9 @@ class DocumentTool(
     private val fileService: FileService,
     private val openAiImageModel: OpenAiImageModel
 ) {
+
+    @Value($$"${ai.generate.code.path}")
+    lateinit var savePath: String
 
     @Tool("保存用户文件")
     fun saveUserFile(@ToolMemoryId userId: Long, filePath: String) {
@@ -34,7 +38,7 @@ class DocumentTool(
     }
 
     @Tool("代码生成")
-    fun generateCode(@ToolMemoryId userId: Long, code: String, extension:String, savePath: String): String {
+    fun generateCode(@ToolMemoryId userId: Long, code: String, extension:String): String {
         println("【Tool generateCode Called】")
         val fileName = "${LocalTime.now().nano}.$extension"
         val path = "$savePath/$fileName"

@@ -21,11 +21,8 @@ class UserServiceImpl: UserService {
     @Value($$"${ai.default.password}")
     private lateinit var defaultPassword: String
     
-    @Autowired
-    private lateinit var passwordEncoder: PasswordEncoder
-
-    @Autowired
-    private lateinit var userRepository: UserRepository
+    @Autowired private lateinit var passwordEncoder: PasswordEncoder
+    @Autowired private lateinit var userRepository: UserRepository
 
     fun findAll(): MutableList<User> {
         return userRepository.findAll()

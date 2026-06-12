@@ -2,6 +2,7 @@ package com.feng.langchain4jstarter.config
 
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.authentication.AuthenticationManager
@@ -28,6 +29,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 @EnableWebSecurity
 class SecurityConfig {
 
+    @Value($$"${spring.cors.origins}")
+    private lateinit var origins: String
+
     @Bean
     fun passwordEncoder(): PasswordEncoder {
         // BCrypt 是一种自适应哈希算法，自带随机盐，极其安全
@@ -49,7 +53,7 @@ class SecurityConfig {
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
         val configuration = CorsConfiguration()
-        configuration.allowedOrigins = mutableListOf("http://localhost:63342") // 或您的前端地址
+        configuration.allowedOrigins = origins.split(",") // 或您的前端地址
         configuration.setAllowedMethods(listOf("GET", "POST", "PUT", "DELETE", "OPTIONS"))
         configuration.allowedHeaders = mutableListOf("*")
         configuration.allowCredentials = true

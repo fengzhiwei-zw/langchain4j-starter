@@ -24,6 +24,12 @@ spring:
       write-dates-as-timestamps: false
     # 确保时区匹配
     time-zone: GMT+8
+  cors:
+    origins: http://localhost:63342
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
 
 ai:
   dash-scope:
@@ -35,6 +41,9 @@ ai:
     image-model-name: wan2.7-image-pro
   default:
     password: ${DEFAULT_PASSWORD}
+  generate:
+    code:
+      path: /Users/mac/Documents/share
 
 # LangChain4j 配置（通过 Starter 自动注入，也可通过@Configuration配置，更灵活）
 langchain4j:
@@ -50,7 +59,8 @@ langchain4j:
       model-name: qwen3.6-plus   # 推荐从低成本模型开始
       temperature: 0.7
       max-tokens: 1000
-      max-retries: 2
+      timeout: 60s
+      max-retries: 1
 #      logRequests: true
 #      logResponses: true
     streaming-chat-model:
@@ -59,7 +69,8 @@ langchain4j:
       model-name: qwen3-8b
       temperature: 0.7
       max-tokens: 1000
-      max-retries: 2
+      timeout: 60s
+      max-retries: 1
     image-model:
       api-key: ${DASHSCOPE_API_KEY}
       base-url: https://dashscope.aliyuncs.com/api/v1
