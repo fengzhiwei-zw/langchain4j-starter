@@ -7,6 +7,7 @@ import com.feng.langchain4jstarter.listener.AiToolExecutedListener
 import com.feng.langchain4jstarter.service.Assistant
 import com.feng.langchain4jstarter.service.AssistantStream
 import com.feng.langchain4jstarter.tool.DocumentTool
+import com.feng.langchain4jstarter.tool.UserTool
 import com.feng.langchain4jstarter.tool.WeatherTool
 import dev.langchain4j.community.store.memory.chat.redis.RedisChatMemoryStore
 import dev.langchain4j.data.segment.TextSegment
@@ -68,6 +69,7 @@ class AiConfig {
     @Bean
     fun chatMemoryStore(): ChatMemoryStore {
         return RedisChatMemoryStore.builder()
+            // .storeType(StoreType.STRING)
             .host("localhost")
             .port(6379)
             .ttl(3600)
@@ -124,7 +126,7 @@ class AiConfig {
             .chatModel(chatModel)
             .chatMemoryProvider(chatMemoryProvider) // 使用 Provider（推荐）
             .contentRetriever(contentRetriever)
-            .tools(WeatherTool(), documentTool)
+            .tools(WeatherTool(), documentTool, UserTool())
             .registerListeners(AiRequestListener(), AiToolExecutedListener(), AiResponseListener(), AiCompletedListener())
             .build()
     }
@@ -141,7 +143,7 @@ class AiConfig {
             .streamingChatModel(chatModel)
             .chatMemoryProvider(chatMemoryProvider) // 使用 Provider（推荐）
             .contentRetriever(contentRetriever)
-            .tools(WeatherTool(), documentTool)
+            .tools(WeatherTool(), documentTool, UserTool())
             .registerListeners(AiRequestListener(), AiToolExecutedListener(), AiResponseListener(), AiCompletedListener())
             .build()
     }

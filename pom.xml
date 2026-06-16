@@ -28,9 +28,11 @@
     </scm>
     <properties>
         <java.version>21</java.version>
+        <jedis.version>7.2.1</jedis.version>
         <kotlin.version>2.2.21</kotlin.version>
         <langchain4j.version>1.13.1-beta23</langchain4j.version>  <!-- 请检查最新版本 -->
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -68,6 +70,10 @@
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-community-redis-spring-boot-starter</artifactId>
             <version>${langchain4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
         </dependency>
 
         <!-- Embedding 模型（推荐 bge-small 或 all-MiniLM） -->
@@ -155,11 +161,6 @@
         </dependency>
 
     </dependencies>
-    <dependencyManagement>
-        <dependencies>
-
-        </dependencies>
-    </dependencyManagement>
 
     <build>
         <sourceDirectory>${project.basedir}/src/main/kotlin</sourceDirectory>

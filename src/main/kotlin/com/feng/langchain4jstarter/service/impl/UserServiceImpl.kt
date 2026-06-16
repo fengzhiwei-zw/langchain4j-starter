@@ -81,12 +81,12 @@ class UserServiceImpl {
     }
 
     @Transactional
-    fun updatePasswordByUsername(username: String, password: String) {
-        userRepository.findByUsername(username)
+    fun updatePasswordByUsername(username: String, password: String, newPassword: String) {
+        userRepository.findByUsernameAndPassword(username, passwordEncoder.encode(password))
             .orElseThrow {
                 BusinessException(404, "用户不存在")
             }.apply {
-                this.password = passwordEncoder.encode(password)
+                this.password = passwordEncoder.encode(newPassword)
             }
     }
 

@@ -8,5 +8,6 @@ import java.util.*
 @Repository
 interface UserRepository : JpaRepository<User, Long> {
     // 自动拥有 findById, save, delete 等方法
-    fun findByUsername(username: String?): Optional<User>
+    fun findByUsername(username: String): Optional<User>
+    fun findByUsernameAndPassword(username: String, password: String): Optional<User>
 }

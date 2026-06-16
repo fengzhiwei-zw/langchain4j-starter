@@ -16,7 +16,7 @@ class CustomUserDetailsService : UserDetailsService {
     private lateinit var userRepository: UserRepository
 
     @Throws(UsernameNotFoundException::class)
-    override fun loadUserByUsername(username: String?): UserDetails {
+    override fun loadUserByUsername(username: String): UserDetails {
         val userEntity = userRepository.findByUsername(username)
             .orElseThrow {
                 BusinessException(404, "用户不存在")

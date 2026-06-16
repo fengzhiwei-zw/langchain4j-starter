@@ -38,7 +38,7 @@ class UserTool {
         // 校验该订单是否属于当前用户（逻辑省略）
         println("【审计】用户正在通过 AI 查询所有用户")
         val currentUser = SecurityUtil.username
-        if (currentUser != "admin") {
+        if (currentUser != "李二") {
             throw BusinessException(403, "无权执行此操作")
         }
         return userService.findAll()
@@ -51,26 +51,26 @@ class UserTool {
         return userService.save(UserSaveDTO(username, nickname, email, phone))
     }
 
-    @Tool("通过用户名修改用户")
+    @Tool("通过用户名修改用户信息")
     fun updateByUsername(username: String, nickname: String, email: String, phone: String): User {
         // 校验该订单是否属于当前用户（逻辑省略）
         println("【审计】用户正在通过 AI 修改用户")
         val currentUser = SecurityUtil.username
-        if (currentUser != "admin") {
+        if (currentUser != "李二") {
             throw BusinessException(403, "无权执行此操作")
         }
         return userService.updateByUsername(UserSaveDTO(username, nickname, email, phone))
     }
 
-    @Tool("通过用户名修改用户")
-    fun updatePasswordByUsername(username: String, password: String) {
+    @Tool("修改用户密码")
+    fun updatePasswordByUsername(username: String, password: String, newPassword: String) {
         // 校验该订单是否属于当前用户（逻辑省略）
         println("【审计】用户正在通过 AI 修改用户密码")
         val currentUser = SecurityUtil.username
-        if (currentUser != "admin") {
+        if (currentUser != "李二") {
             throw BusinessException(403, "无权执行此操作")
         }
-        userService.updatePasswordByUsername(username, password)
+        userService.updatePasswordByUsername(username, password, newPassword)
     }
 
     @Tool("通过用户名删除用户")
@@ -78,7 +78,7 @@ class UserTool {
         // 校验该订单是否属于当前用户（逻辑省略）
         println("【审计】用户正在通过 AI 删除用户")
         val currentUser = SecurityUtil.username
-        if (currentUser != "admin") {
+        if (currentUser != "李二") {
             throw BusinessException(403, "无权执行此操作")
         }
         return userService.deleteByUsername(username)
