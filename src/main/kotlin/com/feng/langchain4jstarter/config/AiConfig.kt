@@ -9,9 +9,6 @@ import com.feng.langchain4jstarter.service.AssistantStream
 import com.feng.langchain4jstarter.tool.DocumentTool
 import com.feng.langchain4jstarter.tool.WeatherTool
 import dev.langchain4j.community.store.memory.chat.redis.RedisChatMemoryStore
-import dev.langchain4j.data.document.loader.FileSystemDocumentLoader
-import dev.langchain4j.data.document.parser.apache.tika.ApacheTikaDocumentParser
-import dev.langchain4j.data.document.splitter.DocumentSplitters
 import dev.langchain4j.data.segment.TextSegment
 import dev.langchain4j.memory.chat.ChatMemoryProvider
 import dev.langchain4j.memory.chat.MessageWindowChatMemory
@@ -71,7 +68,8 @@ class AiConfig {
     @Bean
     fun chatMemoryStore(): ChatMemoryStore {
         return RedisChatMemoryStore.builder()
-            .host("localhost").port(6379)
+            .host("localhost")
+            .port(6379)
             .ttl(3600)
             .build()
     }
@@ -148,18 +146,18 @@ class AiConfig {
             .build()
     }
 
-    @Deprecated("工程启动时加载文件")
-    private fun loadPdfIntoStore(store: EmbeddingStore<TextSegment>, model: EmbeddingModel) {
-        // 1. 加载 PDF 文件
-        val document = FileSystemDocumentLoader.loadDocument(
-            "C:/Users/Fengzhiwei/Downloads/核心产品：新一代多领域物理统一建模与仿真平台.docx",
-            ApacheTikaDocumentParser()
-        )
-
-        // 2. 将文档切碎（每片 300 字，重叠 30 字保证语义连续）
-        val splitter = DocumentSplitters.recursive(500, 100)
-        val segments = splitter.split(document)
-        // 5. 将切片向量化并存储
-        store.addAll(model.embedAll(segments).content(), segments)
-    }
+    // @Deprecated("工程启动时加载文件")
+    // private fun loadPdfIntoStore(store: EmbeddingStore<TextSegment>, model: EmbeddingModel) {
+    //     // 1. 加载 PDF 文件
+    //     val document = FileSystemDocumentLoader.loadDocument(
+    //         "C:/Users/Fengzhiwei/Downloads/核心产品：新一代多领域物理统一建模与仿真平台.docx",
+    //         ApacheTikaDocumentParser()
+    //     )
+    //
+    //     // 2. 将文档切碎（每片 300 字，重叠 30 字保证语义连续）
+    //     val splitter = DocumentSplitters.recursive(500, 100)
+    //     val segments = splitter.split(document)
+    //     // 5. 将切片向量化并存储
+    //     store.addAll(model.embedAll(segments).content(), segments)
+    // }
 }

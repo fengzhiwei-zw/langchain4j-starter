@@ -28,5 +28,5 @@ class AiAuditLog(
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
-    var createdAt: LocalDateTime? = null // 自动填入创建时间，由 Spring Data 审计功能接管
+    var createTime: LocalDateTime? = null // 自动填入创建时间，由 Spring Data 审计功能接管
 )

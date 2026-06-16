@@ -1,5 +1,6 @@
 package com.feng.langchain4jstarter.service.impl
 
+import com.feng.langchain4jstarter.exception.BusinessException
 import com.feng.langchain4jstarter.repository.UserRepository
 import com.feng.langchain4jstarter.util.LoginUser
 import org.springframework.beans.factory.annotation.Autowired
@@ -16,7 +17,10 @@ class CustomUserDetailsService : UserDetailsService {
 
     @Throws(UsernameNotFoundException::class)
     override fun loadUserByUsername(username: String?): UserDetails {
-        val userEntity = userRepository.findByUsername(username).get()
+        val userEntity = userRepository.findByUsername(username)
+            .orElseThrow {
+                BusinessException(404, "用户不存在")
+            }
         val authorities: MutableList<GrantedAuthority> = ArrayList()
 
         // 获取角色、权限
