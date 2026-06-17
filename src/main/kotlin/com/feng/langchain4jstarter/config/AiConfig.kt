@@ -1,9 +1,5 @@
 package com.feng.langchain4jstarter.config
 
-import com.feng.langchain4jstarter.listener.AiCompletedListener
-import com.feng.langchain4jstarter.listener.AiRequestListener
-import com.feng.langchain4jstarter.listener.AiResponseListener
-import com.feng.langchain4jstarter.listener.AiToolExecutedListener
 import com.feng.langchain4jstarter.service.Assistant
 import com.feng.langchain4jstarter.service.AssistantStream
 import com.feng.langchain4jstarter.tool.DocumentTool
@@ -95,7 +91,7 @@ class AiConfig {
     //         .baseUrl("baseUrl")
     //         .modelName("streamModelName")
     //         // .listeners(myAiObserver) // 手动挂载，确保 100% 生效
-    //         .timeout(Duration.ofSeconds(600))
+    //         // .timeout(Duration.ofSeconds(600))
     //         .logRequests(true)
     //         .logResponses(true)
     //         .build()
@@ -108,7 +104,7 @@ class AiConfig {
     //         .baseUrl("baseUrl")
     //         .modelName("modelName")
     //         // .listeners(myAiObserver) // 手动挂载，确保 100% 生效
-    //         .timeout(Duration.ofSeconds(600))
+    //         // .timeout(Duration.ofSeconds(600))
     //         .logRequests(true)
     //         .logResponses(true)
     //         .build()
@@ -127,7 +123,7 @@ class AiConfig {
             .chatMemoryProvider(chatMemoryProvider) // 使用 Provider（推荐）
             .contentRetriever(contentRetriever)
             .tools(WeatherTool(), documentTool, UserTool())
-            .registerListeners(AiRequestListener(), AiToolExecutedListener(), AiResponseListener(), AiCompletedListener())
+            // .registerListeners(AiRequestListener(), AiToolExecutedListener(), AiResponseListener(), AiCompletedListener())
             .build()
     }
 
@@ -144,7 +140,7 @@ class AiConfig {
             .chatMemoryProvider(chatMemoryProvider) // 使用 Provider（推荐）
             .contentRetriever(contentRetriever)
             .tools(WeatherTool(), documentTool, UserTool())
-            .registerListeners(AiRequestListener(), AiToolExecutedListener(), AiResponseListener(), AiCompletedListener())
+            // .registerListeners(AiRequestListener(), AiToolExecutedListener(), AiResponseListener(), AiCompletedListener())
             .build()
     }
 

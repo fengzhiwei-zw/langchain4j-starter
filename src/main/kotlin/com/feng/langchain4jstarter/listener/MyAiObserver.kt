@@ -10,9 +10,10 @@ import dev.langchain4j.model.chat.listener.ChatModelListener
 import dev.langchain4j.model.chat.listener.ChatModelRequestContext
 import dev.langchain4j.model.chat.listener.ChatModelResponseContext
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 import java.util.concurrent.CompletableFuture
 
-// @Component
+@Component
 class MyAiObserver: ChatModelListener {
 
     @Autowired
