@@ -6,12 +6,18 @@ import com.feng.langchain4jstarter.tool.DocumentTool
 import com.feng.langchain4jstarter.tool.UserTool
 import com.feng.langchain4jstarter.tool.WeatherTool
 import dev.langchain4j.community.store.memory.chat.redis.RedisChatMemoryStore
+import dev.langchain4j.data.document.loader.FileSystemDocumentLoader
+import dev.langchain4j.data.document.parser.apache.tika.ApacheTikaDocumentParser
+import dev.langchain4j.data.document.splitter.DocumentSplitters
 import dev.langchain4j.data.segment.TextSegment
 import dev.langchain4j.memory.chat.ChatMemoryProvider
 import dev.langchain4j.memory.chat.MessageWindowChatMemory
 import dev.langchain4j.model.chat.ChatModel
 import dev.langchain4j.model.chat.StreamingChatModel
 import dev.langchain4j.model.embedding.EmbeddingModel
+import dev.langchain4j.rag.DefaultRetrievalAugmentor
+import dev.langchain4j.rag.RetrievalAugmentor
+import dev.langchain4j.rag.content.aggregator.ReRankingContentAggregator
 import dev.langchain4j.rag.content.retriever.ContentRetriever
 import dev.langchain4j.rag.content.retriever.EmbeddingStoreContentRetriever
 import dev.langchain4j.service.AiServices
@@ -57,8 +63,25 @@ class AiConfig {
         return EmbeddingStoreContentRetriever.builder()
             .embeddingStore(embeddingStore)
             .embeddingModel(embeddingModel)
-            .minScore(0.7)
-            .maxResults(5) // 找前三个最相关的片段
+            .minScore(0.5)
+            .maxResults(20) // 找前三个最相关的片段
+            .build()
+    }
+
+    @Bean
+    fun retrievalAugmentor(
+        contentRetriever: ContentRetriever,
+        scoringModel: DashScopeScoringModel
+    ): RetrievalAugmentor {
+        val reRankingRetriever = ReRankingContentAggregator.builder()
+            .scoringModel(scoringModel)           // 用 ScoringModel 精排
+            .minScore(0.5)
+            .maxResults(5)                        // 精排后只保留 Top5
+            .build()
+
+        return DefaultRetrievalAugmentor.builder()
+            .contentRetriever(contentRetriever) // 用向量检索召回候选（比如 Top20）
+            .contentAggregator(reRankingRetriever)
             .build()
     }
 
@@ -114,14 +137,14 @@ class AiConfig {
     fun assistant(
         chatModel: ChatModel,
         chatMemoryProvider: ChatMemoryProvider,
-        contentRetriever : ContentRetriever,
+        retrievalAugmentor : RetrievalAugmentor,
         documentTool: DocumentTool
     ): Assistant {   // 注入 Provider
 
         return AiServices.builder(Assistant::class.java)
             .chatModel(chatModel)
             .chatMemoryProvider(chatMemoryProvider) // 使用 Provider（推荐）
-            .contentRetriever(contentRetriever)
+            .retrievalAugmentor(retrievalAugmentor)
             .tools(WeatherTool(), documentTool, UserTool())
             // .registerListeners(AiRequestListener(), AiToolExecutedListener(), AiResponseListener(), AiCompletedListener())
             .build()
@@ -131,31 +154,31 @@ class AiConfig {
     fun assistantStream(
         chatModel: StreamingChatModel,
         chatMemoryProvider: ChatMemoryProvider,
-        contentRetriever : ContentRetriever,
+        retrievalAugmentor : RetrievalAugmentor,
         documentTool: DocumentTool
     ): AssistantStream {   // 注入 Provider
 
         return AiServices.builder(AssistantStream::class.java)
             .streamingChatModel(chatModel)
             .chatMemoryProvider(chatMemoryProvider) // 使用 Provider（推荐）
-            .contentRetriever(contentRetriever)
+            .retrievalAugmentor(retrievalAugmentor)
             .tools(WeatherTool(), documentTool, UserTool())
             // .registerListeners(AiRequestListener(), AiToolExecutedListener(), AiResponseListener(), AiCompletedListener())
             .build()
     }
 
-    // @Deprecated("工程启动时加载文件")
-    // private fun loadPdfIntoStore(store: EmbeddingStore<TextSegment>, model: EmbeddingModel) {
-    //     // 1. 加载 PDF 文件
-    //     val document = FileSystemDocumentLoader.loadDocument(
-    //         "C:/Users/Fengzhiwei/Downloads/核心产品：新一代多领域物理统一建模与仿真平台.docx",
-    //         ApacheTikaDocumentParser()
-    //     )
-    //
-    //     // 2. 将文档切碎（每片 300 字，重叠 30 字保证语义连续）
-    //     val splitter = DocumentSplitters.recursive(500, 100)
-    //     val segments = splitter.split(document)
-    //     // 5. 将切片向量化并存储
-    //     store.addAll(model.embedAll(segments).content(), segments)
-    // }
+    @Deprecated("工程启动时加载文件")
+    private fun loadPdfIntoStore(store: EmbeddingStore<TextSegment>, model: EmbeddingModel) {
+        // 1. 加载 PDF 文件
+        val document = FileSystemDocumentLoader.loadDocument(
+            "C:/Users/Fengzhiwei/Downloads/核心产品：新一代多领域物理统一建模与仿真平台.docx",
+            ApacheTikaDocumentParser()
+        )
+
+        // 2. 将文档切碎（每片 300 字，重叠 30 字保证语义连续）
+        val splitter = DocumentSplitters.recursive(500, 100)
+        val segments = splitter.split(document)
+        // 5. 将切片向量化并存储
+        store.addAll(model.embedAll(segments).content(), segments)
+    }
 }

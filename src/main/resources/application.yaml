@@ -77,7 +77,10 @@ langchain4j:
       model-name: wan2.7-image   # 推荐从低成本模型开始
   community:
     redis:
-      enabled: false
+      host: localhost
+      port: 6379
+      enabled: false # 是否启用
+
 # 如果使用 Ollama（本地模型，零 API 成本）：
 # ollama:
 #   chat-model:

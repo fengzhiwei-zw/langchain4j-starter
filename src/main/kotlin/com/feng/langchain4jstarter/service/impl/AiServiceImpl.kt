@@ -36,25 +36,26 @@ class AiServiceImpl : AiService {
         return assistant.chat(userId, message)
     }
 
-    override fun chatStream(
-        userId: Long,
-        message: String
-    ): SseEmitter {
+    override fun chatStream(userId: Long, message: String): SseEmitter {
         val emitter = SseEmitter()
-        assistantStream.chat(userId, message)
-            .onPartialResponse { token ->
-                try {
-                    // SseEmitter 会自动处理 data: 前缀和编码
-                    emitter.send(SseEmitter.event().data(token))
-                } catch (e: Exception) {
-                    emitter.completeWithError(e)
+        try {
+            assistantStream.chat(userId, message)
+                .onPartialResponse { token ->
+                    try {
+                        // SseEmitter 会自动处理 data: 前缀和编码
+                        emitter.send(SseEmitter.event().data(token))
+                    } catch (e: Exception) {
+                        emitter.completeWithError(e)
+                    }
                 }
-            }
-            .onCompleteResponse { _ -> emitter.complete() }
-            .onError({ err ->
-                emitter.completeWithError(err)
-            })
-            .start()
+                .onCompleteResponse { emitter.complete() }
+                .onError { err -> emitter.completeWithError(err) }
+                .start()
+        } catch (e: Exception) {
+            // 在 SseEmitter 创建阶段就出错（比如鉴权失败），直接用 emitter 推送错误事件
+            emitter.send(SseEmitter.event().name("error").data(e.message ?: "未知错误"))
+            emitter.complete()
+        }
         return emitter
     }
 
