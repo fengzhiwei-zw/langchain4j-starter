@@ -7,7 +7,6 @@ import com.feng.langchain4jstarter.exception.BusinessException
 import com.feng.langchain4jstarter.pojo.User
 import com.feng.langchain4jstarter.repository.UserRepository
 import org.apache.commons.lang3.StringUtils
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
@@ -15,13 +14,13 @@ import org.springframework.transaction.annotation.Transactional
 
 
 @Service
-class UserServiceImpl {
+class UserServiceImpl(
+    private val passwordEncoder: PasswordEncoder,
+    private val userRepository: UserRepository
+) {
     // 注入 YAML 里的配置
     @Value($$"${ai.default.password}")
     private lateinit var defaultPassword: String
-    
-    @Autowired private lateinit var passwordEncoder: PasswordEncoder
-    @Autowired private lateinit var userRepository: UserRepository
 
     fun findAll(): MutableList<User> {
         return userRepository.findAll()

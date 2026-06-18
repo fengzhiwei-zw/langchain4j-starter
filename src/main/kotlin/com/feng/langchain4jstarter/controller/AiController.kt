@@ -7,7 +7,6 @@ import com.feng.langchain4jstarter.service.AiService
 import com.feng.langchain4jstarter.service.FileService
 import com.feng.langchain4jstarter.util.RateLimitUtil
 import com.feng.langchain4jstarter.util.SecurityUtil
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
@@ -16,11 +15,11 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
 
 @RestController
 @RequestMapping("/ai")
-class AiController {
-
-    @Autowired private lateinit var aiService: AiService
-    @Autowired private lateinit var fileService: FileService
-    @Autowired private lateinit var rateLimitUtil: RateLimitUtil
+class AiController(
+    private val aiService: AiService,
+    private val fileService: FileService,
+    private val rateLimitUtil: RateLimitUtil
+) {
 
     @PostMapping("/chat")
     fun chat(@RequestBody message: String): ApiResponse<String> {

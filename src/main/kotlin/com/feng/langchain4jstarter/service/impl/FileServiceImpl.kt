@@ -13,7 +13,6 @@ import dev.langchain4j.store.embedding.EmbeddingSearchRequest
 import dev.langchain4j.store.embedding.EmbeddingStore
 import dev.langchain4j.store.embedding.filter.MetadataFilterBuilder.metadataKey
 import org.apache.commons.codec.digest.DigestUtils
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.io.File
@@ -21,10 +20,10 @@ import java.io.InputStream
 import java.util.stream.Collectors.joining
 
 @Service
-class FileServiceImpl: FileService {
-
-    @Autowired private lateinit var embeddingModel: EmbeddingModel
-    @Autowired private lateinit var embeddingStore: EmbeddingStore<TextSegment>
+class FileServiceImpl(
+    private val embeddingModel: EmbeddingModel,
+    private val embeddingStore: EmbeddingStore<TextSegment>
+): FileService {
 
     override fun queryDocument(userId: Long, queryText: String): String {
         val queryEmbedding = embeddingModel.embed(queryText).content()

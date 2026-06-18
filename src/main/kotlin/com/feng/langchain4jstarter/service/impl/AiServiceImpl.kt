@@ -14,23 +14,22 @@ import com.feng.langchain4jstarter.exception.BusinessException
 import com.feng.langchain4jstarter.pojo.ImageTask
 import com.feng.langchain4jstarter.service.*
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
 import java.util.*
 
 
 @Service
-class AiServiceImpl : AiService {
+class AiServiceImpl(
+    private val assistant: Assistant,
+    private val assistantStream: AssistantStream,
+    private val imageGeneration: ImageGeneration,
+    private val imageGenerationParam: ImageGenerationParam,
+    private val imageTaskStore: ImageTaskStore,
+    private val imageTaskPollingService: ImageTaskPollingService,
+) : AiService {
 
     private val log = LoggerFactory.getLogger(javaClass)
-
-    @Autowired private lateinit var assistant: Assistant
-    @Autowired private lateinit var assistantStream: AssistantStream
-    @Autowired private lateinit var imageGeneration: ImageGeneration
-    @Autowired private lateinit var imageGenerationParam: ImageGenerationParam
-    @Autowired private lateinit var imageTaskStore: ImageTaskStore
-    @Autowired private lateinit var imageTaskPollingService: ImageTaskPollingService
 
     override fun chat(userId: Long, message: String): String {
         return assistant.chat(userId, message)

@@ -4,7 +4,6 @@ import com.alibaba.dashscope.aigc.imagegeneration.ImageGeneration
 import com.feng.langchain4jstarter.pojo.ImageTask
 import com.feng.langchain4jstarter.pojo.TaskStatus
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 
@@ -15,12 +14,12 @@ import org.springframework.stereotype.Service
  * 需要在启动类加 @EnableAsync 才能生效。
  */
 @Service
-class ImageTaskPollingService {
+class ImageTaskPollingService(
+    private val imageGeneration: ImageGeneration,
+    private val imageTaskStore: ImageTaskStore
+) {
 
     private val log = LoggerFactory.getLogger(javaClass)
-
-    @Autowired private lateinit var imageGeneration: ImageGeneration
-    @Autowired private lateinit var imageTaskStore: ImageTaskStore
 
     companion object {
         private const val MAX_WAIT_MS = 3 * 60 * 1000L  // 最长等待 3 分钟

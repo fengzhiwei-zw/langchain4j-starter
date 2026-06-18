@@ -3,7 +3,6 @@ package com.feng.langchain4jstarter.service.impl
 import com.feng.langchain4jstarter.exception.BusinessException
 import com.feng.langchain4jstarter.repository.UserRepository
 import com.feng.langchain4jstarter.util.LoginUser
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
@@ -11,9 +10,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.stereotype.Service
 
 @Service
-class CustomUserDetailsService : UserDetailsService {
-    @Autowired
-    private lateinit var userRepository: UserRepository
+class CustomUserDetailsService(
+    private val userRepository: UserRepository
+): UserDetailsService {
 
     @Throws(UsernameNotFoundException::class)
     override fun loadUserByUsername(username: String): UserDetails {
