@@ -143,6 +143,7 @@ class AiConfig {
         chatMemoryProvider: ChatMemoryProvider,
         retrievalAugmentor : RetrievalAugmentor,
         documentTool: DocumentTool,
+        userTool: UserTool,
         aiResponseListener: AiResponseListener
     ): Assistant {   // 注入 Provider
 
@@ -150,7 +151,7 @@ class AiConfig {
             .chatModel(chatModel)
             .chatMemoryProvider(chatMemoryProvider) // 使用 Provider（推荐）
             .retrievalAugmentor(retrievalAugmentor)
-            .tools(WeatherTool(), documentTool, UserTool())
+            .tools(WeatherTool(), documentTool, userTool)
             .registerListeners(
                 AiToolExecutedListener(), aiResponseListener, AiCompletedListener(), AiErrorListener()
             )
@@ -163,6 +164,7 @@ class AiConfig {
         chatMemoryProvider: ChatMemoryProvider,
         retrievalAugmentor : RetrievalAugmentor,
         documentTool: DocumentTool,
+        userTool: UserTool,
         aiResponseListener: AiResponseListener
     ): AssistantStream {   // 注入 Provider
 
@@ -170,7 +172,7 @@ class AiConfig {
             .streamingChatModel(chatModel)
             .chatMemoryProvider(chatMemoryProvider) // 使用 Provider（推荐）
             .retrievalAugmentor(retrievalAugmentor)
-            .tools(WeatherTool(), documentTool, UserTool())
+            .tools(WeatherTool(), documentTool, userTool)
             .registerListeners(
                 AiToolExecutedListener(), aiResponseListener, AiCompletedListener(), AiErrorListener()
             )

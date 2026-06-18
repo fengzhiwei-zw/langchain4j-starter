@@ -11,8 +11,7 @@ import java.time.LocalTime
 
 @Component
 class DocumentTool(
-    private val fileService: FileService,
-    private val openAiImageModel: OpenAiImageModel
+    private val fileService: FileService, private val openAiImageModel: OpenAiImageModel
 ) {
 
     @Value($$"${ai.generate.code.path}")

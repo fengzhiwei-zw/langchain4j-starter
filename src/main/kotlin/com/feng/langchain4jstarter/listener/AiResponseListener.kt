@@ -33,10 +33,11 @@ class AiResponseListener(
             userId = invocationContext.chatMemoryId() as Long
             prompt = invocationContext.userMessage().singleText()
             // 如果存在toolExecutionRequests：调用Tool；不存在：AI结果
-            if (response.aiMessage().hasToolExecutionRequests()){
+            this.response = if (response.aiMessage().hasToolExecutionRequests()){
                 invocationContext.userMessage().attributes()[invocationContext.invocationId().toString()] = "主键ID"
+                response.aiMessage().toolExecutionRequests().toString()
             } else {
-                this.response = response.aiMessage().text()
+                response.aiMessage().text()
             }
             totalTokens = (if (response.tokenUsage() != null) response.tokenUsage().totalTokenCount() else 0)
             latencyMs = (latency)

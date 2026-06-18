@@ -7,17 +7,13 @@ import com.feng.langchain4jstarter.service.impl.UserServiceImpl
 import com.feng.langchain4jstarter.util.SecurityUtil
 import dev.langchain4j.agent.tool.Tool
 import jakarta.servlet.http.HttpServletRequest
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
 
 @Component
-class UserTool {
-    @Autowired
-    private lateinit var request: HttpServletRequest
-
-    @Autowired
-    private lateinit var userService: UserServiceImpl
+class UserTool(
+    private val request: HttpServletRequest, private val userService: UserServiceImpl
+) {
 
     @Tool("通过用户名查询用户")
     fun findByUsername(username: String): User {
