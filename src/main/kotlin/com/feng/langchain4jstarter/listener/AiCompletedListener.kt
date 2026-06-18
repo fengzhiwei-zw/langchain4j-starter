@@ -5,6 +5,6 @@ import dev.langchain4j.observability.api.listener.AiServiceCompletedListener
 
 class AiCompletedListener : AiServiceCompletedListener {
     override fun onEvent(event: AiServiceCompletedEvent) {
-
+        println("【监控】Ai Service Completed")
     }
 }

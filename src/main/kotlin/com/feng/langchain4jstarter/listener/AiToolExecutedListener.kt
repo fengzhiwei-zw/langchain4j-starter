@@ -5,6 +5,7 @@ import dev.langchain4j.observability.api.listener.ToolExecutedEventListener
 
 class AiToolExecutedListener: ToolExecutedEventListener {
     override fun onEvent(p0: ToolExecutedEvent) {
+        println("【监控】AiToolExecutedListener")
         val invocationContext = p0.invocationContext()
         val request = p0.request()
 

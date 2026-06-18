@@ -33,8 +33,7 @@ class DocumentTool(
     @Tool("生成图像")
     fun generateImage(@ToolMemoryId userId: Long, message: String): String {
         println("【Tool generateImage Called】")
-        val response = openAiImageModel.generate(message)
-        return response.content().url().toString()
+        return openAiImageModel.generate(message).content().url().toString()
     }
 
     @Tool("代码生成")
