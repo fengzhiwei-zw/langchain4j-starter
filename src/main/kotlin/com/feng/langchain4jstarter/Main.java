@@ -9,8 +9,19 @@ import com.alibaba.dashscope.exception.NoApiKeyException;
 import com.alibaba.dashscope.exception.UploadFileException;
 import com.alibaba.dashscope.utils.Constants;
 import com.alibaba.dashscope.utils.JsonUtils;
+import com.feng.langchain4jstarter.service.Assistant;
+import dev.langchain4j.mcp.McpToolProvider;
+import dev.langchain4j.mcp.client.DefaultMcpClient;
+import dev.langchain4j.mcp.client.McpClient;
+import dev.langchain4j.mcp.client.transport.McpTransport;
+import dev.langchain4j.mcp.client.transport.http.StreamableHttpMcpTransport;
+import dev.langchain4j.model.chat.ChatModel;
+import dev.langchain4j.model.openai.OpenAiChatModel;
+import dev.langchain4j.service.AiServices;
+import dev.langchain4j.service.tool.ToolProvider;
 
 import java.util.Collections;
+import java.util.List;
 
 public class Main {
 
@@ -61,11 +72,50 @@ public class Main {
         System.out.println(JsonUtils.toJson(result));
     }
 
+    public static void mcp() throws Exception {
+
+        ChatModel model = OpenAiChatModel.builder()
+                .apiKey(System.getenv("DASHSCOPE_API_KEY"))
+                .modelName("qwen3.7-plus")
+                .logRequests(true)
+                .logResponses(true)
+                .build();
+
+        McpTransport transport = new StreamableHttpMcpTransport.Builder()
+                .url("http://10.12.1.84:9091/mcp")
+                .logRequests(true) // 打印请求
+                .logResponses(true) // 打印响应
+                .build();
+
+        McpClient mcpClient = new DefaultMcpClient.Builder()
+                .transport(transport)
+                .build();
+
+        ToolProvider toolProvider = McpToolProvider.builder()
+                .mcpClients(List.of(mcpClient))
+                .build();
+
+        Assistant bot = AiServices.builder(Assistant.class)
+                .chatModel(model)
+                .toolProvider(toolProvider)
+                .build();
+
+        try {
+            String response = bot.chat(1, "model ArrayEventModel function sumArray input  Real arr[:]; output Real result; algorithm result := 0.0; for i in 1:size(arr, 1) loop result := result + arr[i]; end for; end sumArray; parameter Real weights[3] = {1.0, 2.0, 3.0}; Real x(start = 0.0); Real y; equation der(x) = 1.0; when x >= sumArray(weights) then y = x; end when; annotation(experiment(StartTime = 0, StopTime = 10, Tolerance = 1e-6)); end ArrayEventModel;");
+            System.out.println("RESPONSE: " + response);
+        } finally {
+            mcpClient.close();
+        }
+    }
+
     public static void main(String[] args) {
         try {
-            asyncCall();
+            // asyncCall();
+            mcp();
         } catch (ApiException | NoApiKeyException | UploadFileException e) {
             System.out.println(e.getMessage());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }
